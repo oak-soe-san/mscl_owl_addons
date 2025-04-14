@@ -48,7 +48,7 @@
                                     <label class="form-label">Deadline</label>
                                     <div class="input-group date-picker-group">
                                         <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                                        <input type="date" class="form-control date-input" 
+                                        <input type="datetime-local" class="form-control date-input" 
                                                t-model="state.newTask.deadline" />
                                     </div>
                                 </div>
@@ -192,7 +192,7 @@
                                         <div class="text-muted small mt-1">
                                             <span t-if="task.deadline" class="me-3">
                                                 <i class="fa fa-calendar me-1" />
-                                                <t t-esc="task.deadline" />
+                                                <t t-esc="formatDateTime(task.deadline)" />
                                                 <i t-if="task.is_overdue" class="fa fa-exclamation-circle text-danger ms-1" title="Overdue"></i>
                                             </span>
                                             <span t-if="task.state === 'draft'" class="badge bg-info">New</span>

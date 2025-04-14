@@ -63,7 +63,14 @@ class TaskDashboard extends Component {
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
+        const hh = String(today.getHours()).padStart(2, '0');
+        const min = String(today.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    }
+
+    getDateOnlyFormatted(dateTime) {
+        if (!dateTime) return '';
+        return dateTime.split('T')[0];
     }
 
     async fetchUsers() {
@@ -354,6 +361,29 @@ class TaskDashboard extends Component {
         else if (event.key === "Escape") {
             event.preventDefault();
             this.closeTaskModal();
+        }
+    }
+
+    formatDateTime(dateTimeStr) {
+        // If not a valid date string, return as is
+        if (!dateTimeStr) return '';
+        
+        try {
+            const date = new Date(dateTimeStr);
+            if (isNaN(date.getTime())) return dateTimeStr;
+            
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            
+            return date.toLocaleDateString(undefined, options);
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return dateTimeStr;
         }
     }
 

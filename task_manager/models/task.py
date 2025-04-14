@@ -32,7 +32,7 @@ class Task(models.Model):
     
     # Dates & Timing
     create_date = fields.Datetime(string='Created on', readonly=True)
-    deadline = fields.Date(string='Deadline')
+    deadline = fields.Datetime(string='Deadline')
     completed_date = fields.Datetime(string='Completed on', readonly=True)
     duration = fields.Float(string='Duration (Hours)', default=0.0)
     
@@ -47,20 +47,21 @@ class Task(models.Model):
     @api.depends('deadline')
     def _compute_days_to_deadline(self):
         """Calculate days remaining until the deadline"""
-        today = fields.Date.today()
+        today = fields.Datetime.now()
         for task in self:
             if task.deadline:
-                task.days_to_deadline = (task.deadline - today).days
+                diff = task.deadline - today
+                task.days_to_deadline = diff.days
             else:
                 task.days_to_deadline = 0
     
     @api.depends('deadline', 'state')
     def _compute_is_overdue(self):
         """Check if task is overdue"""
-        today = fields.Date.today()
+        now = fields.Datetime.now()
         for task in self:
             if task.deadline and task.state not in ['done', 'cancelled']:
-                task.is_overdue = task.deadline < today
+                task.is_overdue = task.deadline < now
             else:
                 task.is_overdue = False
     
