@@ -22,6 +22,7 @@ class TaskDashboard extends Component {
             },
             isLoading: true,
             showQuickAdd: false,
+            showTaskModal: false,
             newTask: {
                 name: "",
                 deadline: this.getTodayFormatted(),
@@ -32,7 +33,12 @@ class TaskDashboard extends Component {
             users: [],
             showSnackbar: false,
             snackbarMessage: "",
-            filterStatus: "all"
+            filterStatus: "all",
+            showDeleteModal: false,
+            deleteTask: {
+                id: null,
+                name: ""
+            }
         });
 
         this.orm = useService("orm");
@@ -148,12 +154,17 @@ class TaskDashboard extends Component {
         this.showSnackbar("Dashboard refreshed");
     }
 
-    // Task quick add functionality
-    toggleQuickAdd() {
-        this.state.showQuickAdd = !this.state.showQuickAdd;
-        if (!this.state.showQuickAdd) {
+    // Task modal functionality
+    toggleTaskModal() {
+        this.state.showTaskModal = !this.state.showTaskModal;
+        if (!this.state.showTaskModal) {
             this.resetTaskForm();
         }
+    }
+    
+    closeTaskModal() {
+        this.state.showTaskModal = false;
+        this.resetTaskForm();
     }
 
     resetTaskForm() {
@@ -166,8 +177,13 @@ class TaskDashboard extends Component {
         this.state.editTaskId = null;
     }
 
+    // Keep toggleQuickAdd for backward compatibility
+    toggleQuickAdd() {
+        this.toggleTaskModal();
+    }
+
     async createTask() {
-        if (!this.state.newTask.name) {
+        if (!this.state.newTask.name || this.state.newTask.name.trim() === "") {
             this.notification.add("Task title is required", {
                 type: "warning",
             });
@@ -176,7 +192,7 @@ class TaskDashboard extends Component {
 
         try {
             const taskData = {
-                name: this.state.newTask.name,
+                name: this.state.newTask.name.trim(),
                 priority: this.state.newTask.priority,
                 user_id: this.state.newTask.user_id || this.userService.userId,
             };
@@ -198,12 +214,11 @@ class TaskDashboard extends Component {
                 this.showSnackbar("Task created successfully");
             }
 
-            this.resetTaskForm();
-            this.toggleQuickAdd();
+            this.closeTaskModal(); // Use the new method to close the modal
             await this.fetchDashboardData();
         } catch (error) {
             console.error("Error saving task:", error);
-            this.notification.add("Failed to save task", {
+            this.notification.add("Failed to save task: " + (error.message || "Unknown error"), {
                 type: "danger",
             });
         }
@@ -216,27 +231,53 @@ class TaskDashboard extends Component {
             ]);
             
             if (task && task.length > 0) {
+                // Convert user_id to proper format - it might be [id, name] or false
+                let userId = this.userService.userId;
+                if (task[0].user_id) {
+                    userId = Array.isArray(task[0].user_id) ? task[0].user_id[0] : task[0].user_id;
+                }
+                
                 this.state.newTask = {
                     name: task[0].name,
                     deadline: task[0].deadline || this.getTodayFormatted(),
-                    priority: task[0].priority,
-                    user_id: task[0].user_id[0]
+                    priority: String(task[0].priority), // Ensure priority is a string
+                    user_id: userId
                 };
                 this.state.editTaskId = taskId;
-                this.state.showQuickAdd = true;
+                this.state.showTaskModal = true;
+            } else {
+                throw new Error("Task not found");
             }
         } catch (error) {
             console.error("Error loading task for edit:", error);
-            this.notification.add("Failed to load task", {
+            this.notification.add("Failed to load task: " + (error.message || "Unknown error"), {
                 type: "danger",
             });
         }
     }
 
     confirmDeleteTask(taskId, taskName) {
-        if (confirm("Are you sure you want to delete task \"" + taskName + "\"?")) {
+        this.state.deleteTask = {
+            id: taskId,
+            name: taskName
+        };
+        this.state.showDeleteModal = true;
+    }
+
+    cancelDelete() {
+        this.state.showDeleteModal = false;
+        this.state.deleteTask = {
+            id: null,
+            name: ""
+        };
+    }
+
+    confirmDelete() {
+        const taskId = this.state.deleteTask.id;
+        if (taskId) {
             this.deleteTask(taskId);
         }
+        this.state.showDeleteModal = false;
     }
 
     async deleteTask(taskId) {
@@ -312,7 +353,7 @@ class TaskDashboard extends Component {
         // Handle Escape key to close the form
         else if (event.key === "Escape") {
             event.preventDefault();
-            this.toggleQuickAdd();
+            this.closeTaskModal();
         }
     }
 

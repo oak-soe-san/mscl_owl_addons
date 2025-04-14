@@ -6,8 +6,8 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="m-0">Task Dashboard</h2>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary" t-on-click="toggleQuickAdd">
-                        <i class="fa fa-plus me-1" /> <t t-if="state.editTaskId">Edit Task</t><t t-else="">Add Task</t>
+                    <button class="btn btn-sm btn-primary" t-on-click="toggleTaskModal">
+                        <i class="fa fa-plus me-1" /> Add Task
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="refreshData">
                         <i class="fa fa-refresh" />
@@ -15,46 +15,56 @@
                 </div>
             </div>
             
-            <!-- Quick Add Task Form -->
-            <div t-if="state.showQuickAdd" class="card shadow-sm mb-4 border-0 quick-add-form" 
-                 t-on-keydown="onFormKeydown">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="m-0"><t t-if="state.editTaskId">Edit Task</t><t t-else="">New Task</t></h5>
-                        <button class="btn btn-sm btn-link text-secondary" t-on-click="toggleQuickAdd">
-                            <i class="fa fa-times" />
-                        </button>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <input type="text" class="form-control" 
-                                   placeholder="Task Title" 
-                                   t-model="state.newTask.name"
-                                   autofocus="true" />
+            <!-- Task Creation/Edit Modal -->
+            <div t-if="state.showTaskModal" class="task-modal-backdrop" t-on-click="closeTaskModal">
+                <div class="task-modal-dialog" t-on-click.stop="" t-on-keydown="onFormKeydown">
+                    <div class="task-modal-content">
+                        <div class="task-modal-header">
+                            <h5 class="task-modal-title">
+                                <t t-if="state.editTaskId">Edit Task</t>
+                                <t t-else="">New Task</t>
+                            </h5>
+                            <button type="button" class="btn-close" t-on-click="closeTaskModal" aria-label="Close"></button>
                         </div>
-                        <div class="col-md-6">
-                            <select class="form-select" t-model="state.newTask.priority">
-                                <option value="0">Low Priority</option>
-                                <option value="1">Normal Priority</option>
-                                <option value="2">High Priority</option>
-                                <option value="3">Urgent</option>
-                            </select>
+                        <div class="task-modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Task Title</label>
+                                <input type="text" class="form-control" 
+                                       placeholder="Enter task title" 
+                                       t-model="state.newTask.name"
+                                       autofocus="true" />
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Priority</label>
+                                    <select class="form-select custom-select" t-model="state.newTask.priority">
+                                        <option value="0">Low Priority</option>
+                                        <option value="1">Normal Priority</option>
+                                        <option value="2">High Priority</option>
+                                        <option value="3">Urgent</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Deadline</label>
+                                    <div class="input-group date-picker-group">
+                                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        <input type="date" class="form-control date-input" 
+                                               t-model="state.newTask.deadline" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Assigned To</label>
+                                <select class="form-select custom-select" t-model="state.newTask.user_id">
+                                    <option value="">Unassigned</option>
+                                    <t t-foreach="state.users" t-as="user" t-key="user.id">
+                                        <option t-att-value="user.id" t-esc="user.name" />
+                                    </t>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <input type="date" class="form-control" 
-                                   placeholder="Deadline" 
-                                   t-model="state.newTask.deadline" />
-                        </div>
-                        <div class="col-12">
-                            <select class="form-select" t-model="state.newTask.user_id">
-                                <option value="">Unassigned</option>
-                                <t t-foreach="state.users" t-as="user" t-key="user.id">
-                                    <option t-att-value="user.id" t-esc="user.name" />
-                                </t>
-                            </select>
-                        </div>
-                        <div class="col-12 text-end">
-                            <button class="btn btn-secondary me-2" t-on-click="toggleQuickAdd">
+                        <div class="task-modal-footer">
+                            <button class="btn btn-secondary" t-on-click="closeTaskModal">
                                 Cancel
                             </button>
                             <button class="btn btn-primary" t-on-click="createTask">
@@ -215,6 +225,25 @@
                 <span t-esc="state.snackbarMessage" />
             </div>
 
+            <!-- Delete Confirmation Modal -->
+            <div t-if="state.showDeleteModal" class="delete-modal-backdrop" t-on-click="cancelDelete">
+                <div class="delete-modal-dialog" t-on-click.stop="">
+                    <div class="delete-modal-content">
+                        <div class="delete-modal-header">
+                            <h5 class="delete-modal-title">Confirm Delete</h5>
+                            <button type="button" class="btn-close" t-on-click="cancelDelete" aria-label="Close"></button>
+                        </div>
+                        <div class="delete-modal-body">
+                            Are you sure you want to delete task "<span t-esc="state.deleteTask.name"></span>"?
+                        </div>
+                        <div class="delete-modal-footer">
+                            <button type="button" class="btn btn-secondary" t-on-click="cancelDelete">Cancel</button>
+                            <button type="button" class="btn btn-danger" t-on-click="confirmDelete">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- CSS Styles -->
             <style>
                 .task-dashboard {
@@ -268,20 +297,176 @@
                     z-index: 1050;
                     animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
                 }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translate(-50%, 20px); }
-                    to { opacity: 1; transform: translate(-50%, 0); }
+                
+                /* Task Modal Styles - Similar to Delete Modal */
+                .task-modal-backdrop {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1050;
+                    animation: fadeIn 0.2s ease-out;
                 }
+                
+                .task-modal-dialog {
+                    max-width: 500px;
+                    width: 100%;
+                    margin: 1.75rem auto;
+                    animation: slideIn 0.3s ease-out;
+                }
+                
+                .task-modal-content {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    background-color: #fff;
+                    background-clip: padding-box;
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                    border-radius: 1rem;
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                    overflow: hidden;
+                }
+                
+                .task-modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem;
+                    border-bottom: 1px solid #dee2e6;
+                    background-color: #f8f9fa;
+                }
+                
+                .task-modal-title {
+                    margin: 0;
+                    font-size: 1.25rem;
+                    color: #212529;
+                }
+                
+                .task-modal-body {
+                    position: relative;
+                    flex: 1 1 auto;
+                    padding: 1.5rem;
+                }
+                
+                .task-modal-footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    padding: 1rem;
+                    border-top: 1px solid #dee2e6;
+                    gap: 0.5rem;
+                    background-color: #f8f9fa;
+                }
+                
+                /* Enhanced form styling */
+                .custom-select {
+                    cursor: pointer;
+                    background-position: right 0.75rem center;
+                    background-size: 16px 12px;
+                }
+                
+                .date-picker-group {
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+                    border-radius: 4px;
+                    overflow: hidden;
+                }
+                
+                .date-picker-group .input-group-text {
+                    background-color: #f8f9fa;
+                    border-right: none;
+                }
+                
+                .date-input {
+                    border-left: none;
+                    padding-left: 0;
+                }
+                
+                /* Delete modal styles */
+                .delete-modal-backdrop {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1050;
+                    animation: fadeIn 0.2s ease-out;
+                }
+                
+                .delete-modal-dialog {
+                    max-width: 400px;
+                    width: 100%;
+                    margin: 1.75rem auto;
+                    animation: slideIn 0.3s ease-out;
+                }
+                
+                .delete-modal-content {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    background-color: #fff;
+                    background-clip: padding-box;
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                    border-radius: 1rem;
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                    overflow: hidden;
+                }
+                
+                .delete-modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                
+                .delete-modal-title {
+                    margin: 0;
+                    font-size: 1.25rem;
+                }
+                
+                .delete-modal-body {
+                    position: relative;
+                    flex: 1 1 auto;
+                    padding: 1.5rem;
+                }
+                
+                .delete-modal-footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    padding: 1rem;
+                    border-top: 1px solid #dee2e6;
+                    gap: 0.5rem;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes slideIn {
+                    from {
+                        transform: translateY(-30px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                
                 @keyframes fadeOut {
                     from { opacity: 1; transform: translate(-50%, 0); }
                     to { opacity: 0; transform: translate(-50%, 20px); }
-                }
-                .quick-add-form {
-                    animation: formFadeIn 0.3s;
-                }
-                @keyframes formFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
                 }
             </style>
         </div>
