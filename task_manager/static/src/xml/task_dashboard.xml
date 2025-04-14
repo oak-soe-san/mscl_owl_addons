@@ -16,7 +16,8 @@
             </div>
             
             <!-- Quick Add Task Form -->
-            <div t-if="state.showQuickAdd" class="card shadow-sm mb-4 border-0 quick-add-form">
+            <div t-if="state.showQuickAdd" class="card shadow-sm mb-4 border-0 quick-add-form" 
+                 t-on-keydown="onFormKeydown">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="m-0"><t t-if="state.editTaskId">Edit Task</t><t t-else="">New Task</t></h5>

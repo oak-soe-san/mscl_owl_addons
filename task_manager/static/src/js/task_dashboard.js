@@ -303,6 +303,19 @@ class TaskDashboard extends Component {
         }, 3000);
     }
 
+    onFormKeydown(event) {
+        // Handle Enter key to create/update task
+        if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey) {
+            event.preventDefault();
+            this.createTask();
+        }
+        // Handle Escape key to close the form
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            this.toggleQuickAdd();
+        }
+    }
+
     getPriorityClass(priority) {
         const classes = {
             '0': 'bg-light',
