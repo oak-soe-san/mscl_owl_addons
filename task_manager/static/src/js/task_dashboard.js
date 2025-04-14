@@ -38,13 +38,18 @@ class TaskDashboard extends Component {
             deleteTask: {
                 id: null,
                 name: ""
-            }
+            },
+            isSubmitting: false
         });
 
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.notification = useService("notification");
         this.userService = useService("user");
+
+        // Add a global escape key handler
+        this.escKeyHandler = this.handleEscapeKey.bind(this);
+        document.addEventListener('keydown', this.escKeyHandler);
 
         onWillStart(async () => {
             // Set current user in the task after services are initialized
@@ -57,6 +62,22 @@ class TaskDashboard extends Component {
             ]);
         });
     }
+    
+    // Cleanup when component is destroyed
+    __destroy() {
+        document.removeEventListener('keydown', this.escKeyHandler);
+    }
+    
+    // Handle escape key globally
+    handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            if (this.state.showTaskModal) {
+                this.closeTaskModal();
+            } else if (this.state.showDeleteModal) {
+                this.cancelDelete();
+            }
+        }
+    }
 
     getTodayFormatted() {
         const today = new Date();
@@ -65,7 +86,8 @@ class TaskDashboard extends Component {
         const dd = String(today.getDate()).padStart(2, '0');
         const hh = String(today.getHours()).padStart(2, '0');
         const min = String(today.getMinutes()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+        // Return datetime in Odoo's expected format: YYYY-MM-DD HH:MM:SS
+        return `${yyyy}-${mm}-${dd} ${hh}:${min}:00`;
     }
 
     getDateOnlyFormatted(dateTime) {
@@ -166,12 +188,33 @@ class TaskDashboard extends Component {
         this.state.showTaskModal = !this.state.showTaskModal;
         if (!this.state.showTaskModal) {
             this.resetTaskForm();
+        } else {
+            // Focus the input field when modal opens
+            setTimeout(() => {
+                const titleInput = document.querySelector('.task-modal-content input[type="text"]');
+                if (titleInput) {
+                    titleInput.focus();
+                }
+            }, 50); // Short delay to ensure the DOM is ready
         }
     }
     
     closeTaskModal() {
-        this.state.showTaskModal = false;
-        this.resetTaskForm();
+        // Add animation class first
+        const modalElement = document.querySelector('.task-modal-backdrop');
+        if (modalElement) {
+            modalElement.classList.add('fade-out');
+            
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                this.state.showTaskModal = false;
+                this.resetTaskForm();
+            }, 300); // Match this with the CSS animation duration
+        } else {
+            // Fallback if element not found
+            this.state.showTaskModal = false;
+            this.resetTaskForm();
+        }
     }
 
     resetTaskForm() {
@@ -197,6 +240,13 @@ class TaskDashboard extends Component {
             return;
         }
 
+        // Prevent double submission
+        if (this.state.isSubmitting) {
+            return;
+        }
+        
+        this.state.isSubmitting = true;
+
         try {
             const taskData = {
                 name: this.state.newTask.name.trim(),
@@ -206,7 +256,8 @@ class TaskDashboard extends Component {
 
             // Set deadline if provided, otherwise set to today
             if (this.state.newTask.deadline) {
-                taskData.deadline = this.state.newTask.deadline;
+                // Convert any format to Odoo's expected format
+                taskData.deadline = this.formatDateForOdoo(this.state.newTask.deadline);
             } else {
                 taskData.deadline = this.getTodayFormatted();
             }
@@ -228,6 +279,36 @@ class TaskDashboard extends Component {
             this.notification.add("Failed to save task: " + (error.message || "Unknown error"), {
                 type: "danger",
             });
+        } finally {
+            this.state.isSubmitting = false;
+        }
+    }
+    
+    // Helper method to convert dates to Odoo format
+    formatDateForOdoo(dateStr) {
+        try {
+            // If it's already in the correct format, return it
+            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr)) {
+                return dateStr;
+            }
+            
+            // Handle ISO format or other formats
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) {
+                console.error("Invalid date format:", dateStr);
+                return this.getTodayFormatted(); // Fallback to today
+            }
+            
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}:00`;
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return this.getTodayFormatted(); // Fallback to today
         }
     }
 
@@ -244,14 +325,37 @@ class TaskDashboard extends Component {
                     userId = Array.isArray(task[0].user_id) ? task[0].user_id[0] : task[0].user_id;
                 }
                 
+                // Convert the deadline from Odoo format to a format compatible with datetime-local
+                let deadline = task[0].deadline || this.getTodayFormatted();
+                if (deadline) {
+                    // Convert "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DDTHH:MM"
+                    const dateObj = new Date(deadline);
+                    if (!isNaN(dateObj.getTime())) {
+                        const yyyy = dateObj.getFullYear();
+                        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const dd = String(dateObj.getDate()).padStart(2, '0');
+                        const hh = String(dateObj.getHours()).padStart(2, '0');
+                        const min = String(dateObj.getMinutes()).padStart(2, '0');
+                        deadline = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+                    }
+                }
+                
                 this.state.newTask = {
                     name: task[0].name,
-                    deadline: task[0].deadline || this.getTodayFormatted(),
+                    deadline: deadline,
                     priority: String(task[0].priority), // Ensure priority is a string
                     user_id: userId
                 };
                 this.state.editTaskId = taskId;
                 this.state.showTaskModal = true;
+                
+                // Focus the input field after task is loaded
+                setTimeout(() => {
+                    const titleInput = document.querySelector('.task-modal-content input[type="text"]');
+                    if (titleInput) {
+                        titleInput.focus();
+                    }
+                }, 50);
             } else {
                 throw new Error("Task not found");
             }
@@ -272,19 +376,51 @@ class TaskDashboard extends Component {
     }
 
     cancelDelete() {
-        this.state.showDeleteModal = false;
-        this.state.deleteTask = {
-            id: null,
-            name: ""
-        };
+        // Add animation class first
+        const modalElement = document.querySelector('.delete-modal-backdrop');
+        if (modalElement) {
+            modalElement.classList.add('fade-out');
+            
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                this.state.showDeleteModal = false;
+                this.state.deleteTask = {
+                    id: null,
+                    name: ""
+                };
+            }, 300); // Match this with the CSS animation duration
+        } else {
+            // Fallback if element not found
+            this.state.showDeleteModal = false;
+            this.state.deleteTask = {
+                id: null,
+                name: ""
+            };
+        }
     }
 
     confirmDelete() {
         const taskId = this.state.deleteTask.id;
-        if (taskId) {
-            this.deleteTask(taskId);
+        
+        // Add animation class first
+        const modalElement = document.querySelector('.delete-modal-backdrop');
+        if (modalElement) {
+            modalElement.classList.add('fade-out');
+            
+            // Wait for animation to complete before hiding and deleting
+            setTimeout(() => {
+                if (taskId) {
+                    this.deleteTask(taskId);
+                }
+                this.state.showDeleteModal = false;
+            }, 300); // Match this with the CSS animation duration
+        } else {
+            // Fallback if element not found
+            if (taskId) {
+                this.deleteTask(taskId);
+            }
+            this.state.showDeleteModal = false;
         }
-        this.state.showDeleteModal = false;
     }
 
     async deleteTask(taskId) {
@@ -352,6 +488,8 @@ class TaskDashboard extends Component {
     }
 
     onFormKeydown(event) {
+        console.log("Key pressed:", event.key); // Add debugging
+        
         // Handle Enter key to create/update task
         if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey) {
             event.preventDefault();
@@ -360,6 +498,7 @@ class TaskDashboard extends Component {
         // Handle Escape key to close the form
         else if (event.key === "Escape") {
             event.preventDefault();
+            event.stopPropagation();
             this.closeTaskModal();
         }
     }

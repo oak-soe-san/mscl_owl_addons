@@ -17,8 +17,8 @@
             
             <!-- Task Creation/Edit Modal -->
             <div t-if="state.showTaskModal" class="task-modal-backdrop" t-on-click="closeTaskModal">
-                <div class="task-modal-dialog" t-on-click.stop="" t-on-keydown="onFormKeydown">
-                    <div class="task-modal-content">
+                <div class="task-modal-dialog" t-on-click.stop="">
+                    <div class="task-modal-content" t-on-keydown="onFormKeydown">
                         <div class="task-modal-header">
                             <h5 class="task-modal-title">
                                 <t t-if="state.editTaskId">Edit Task</t>
@@ -27,47 +27,57 @@
                             <button type="button" class="btn-close" t-on-click="closeTaskModal" aria-label="Close"></button>
                         </div>
                         <div class="task-modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Task Title</label>
-                                <input type="text" class="form-control" 
-                                       placeholder="Enter task title" 
-                                       t-model="state.newTask.name"
-                                       autofocus="true" />
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Priority</label>
-                                    <select class="form-select custom-select" t-model="state.newTask.priority">
-                                        <option value="0">Low Priority</option>
-                                        <option value="1">Normal Priority</option>
-                                        <option value="2">High Priority</option>
-                                        <option value="3">Urgent</option>
-                                    </select>
+                            <form t-on-submit.prevent="createTask">
+                                <div class="mb-3">
+                                    <label class="form-label">Task Title</label>
+                                    <input type="text" class="form-control" 
+                                           placeholder="Enter task title" 
+                                           t-model="state.newTask.name"
+                                           t-on-keydown="onFormKeydown"
+                                           autofocus="true" />
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Deadline</label>
-                                    <div class="input-group date-picker-group">
-                                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                                        <input type="datetime-local" class="form-control date-input" 
-                                               t-model="state.newTask.deadline" />
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Priority</label>
+                                        <select class="form-select custom-select" 
+                                                t-model="state.newTask.priority"
+                                                t-on-keydown="onFormKeydown">
+                                            <option value="0">Low Priority</option>
+                                            <option value="1">Normal Priority</option>
+                                            <option value="2">High Priority</option>
+                                            <option value="3">Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Deadline</label>
+                                        <div class="input-group date-picker-group">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                            <input type="datetime-local" class="form-control date-input" 
+                                                   t-model="state.newTask.deadline"
+                                                   t-on-keydown="onFormKeydown" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Assigned To</label>
-                                <select class="form-select custom-select" t-model="state.newTask.user_id">
-                                    <option value="">Unassigned</option>
-                                    <t t-foreach="state.users" t-as="user" t-key="user.id">
-                                        <option t-att-value="user.id" t-esc="user.name" />
-                                    </t>
-                                </select>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Assigned To</label>
+                                    <select class="form-select custom-select" 
+                                            t-model="state.newTask.user_id"
+                                            t-on-keydown="onFormKeydown">
+                                        <option value="">Unassigned</option>
+                                        <t t-foreach="state.users" t-as="user" t-key="user.id">
+                                            <option t-att-value="user.id" t-esc="user.name" />
+                                        </t>
+                                    </select>
+                                </div>
+                                <!-- Hidden submit button to enable form submission with Enter key -->
+                                <button type="submit" class="d-none"></button>
+                            </form>
                         </div>
                         <div class="task-modal-footer">
                             <button class="btn btn-secondary" t-on-click="closeTaskModal">
                                 Cancel
                             </button>
-                            <button class="btn btn-primary" t-on-click="createTask">
+                            <button class="btn btn-primary" t-on-click="createTask" type="submit">
                                 <t t-if="state.editTaskId">Update</t><t t-else="">Create</t>
                             </button>
                         </div>
@@ -311,6 +321,11 @@
                     justify-content: center;
                     z-index: 1050;
                     animation: fadeIn 0.2s ease-out;
+                    transition: opacity 0.3s ease;
+                }
+                
+                .task-modal-backdrop.fade-out {
+                    opacity: 0;
                 }
                 
                 .task-modal-dialog {
@@ -318,6 +333,12 @@
                     width: 100%;
                     margin: 1.75rem auto;
                     animation: slideIn 0.3s ease-out;
+                    transition: transform 0.3s ease, opacity 0.3s ease;
+                }
+                
+                .task-modal-backdrop.fade-out .task-modal-dialog {
+                    transform: translateY(-20px);
+                    opacity: 0;
                 }
                 
                 .task-modal-content {
@@ -399,6 +420,11 @@
                     justify-content: center;
                     z-index: 1050;
                     animation: fadeIn 0.2s ease-out;
+                    transition: opacity 0.3s ease;
+                }
+                
+                .delete-modal-backdrop.fade-out {
+                    opacity: 0;
                 }
                 
                 .delete-modal-dialog {
@@ -406,6 +432,12 @@
                     width: 100%;
                     margin: 1.75rem auto;
                     animation: slideIn 0.3s ease-out;
+                    transition: transform 0.3s ease, opacity 0.3s ease;
+                }
+                
+                .delete-modal-backdrop.fade-out .delete-modal-dialog {
+                    transform: translateY(-20px);
+                    opacity: 0;
                 }
                 
                 .delete-modal-content {
