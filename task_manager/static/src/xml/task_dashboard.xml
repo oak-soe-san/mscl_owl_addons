@@ -96,9 +96,10 @@
             
             <!-- Pomodoro Timer Section (Replacing Task Statistics Cards) -->
             <div class="row mb-4">
+                <!-- Left Column: Pomodoro Timer and News Ticker (2/3 width) -->
                 <div class="col-12 col-lg-8">
                     <!-- Pomodoro Timer Card -->
-                    <div class="card shadow-sm border-0 pomodoro-card">
+                    <div class="card shadow-sm border-0 pomodoro-card mb-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h4 class="card-title m-0">Pomodoro Timer</h4>
@@ -191,8 +192,59 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Trade News Ticker Widget -->
+                    <div class="card shadow-sm border-0 news-ticker-card">
+                        <div class="card-body p-0">
+                            <div class="news-ticker-container">
+                                <div class="news-ticker-header">
+                                    <div class="ticker-label">
+                                        <span class="ticker-pulse"></span>
+                                        LATEST UPDATES
+                                    </div>
+                                    <div class="ticker-control">
+                                        <button class="btn btn-icon ticker-btn" t-on-click="toggleNewsTickerPause">
+                                            <i t-attf-class="fa {{state.newsTickerPaused ? 'fa-play' : 'fa-pause'}}"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="news-ticker-content" t-att-class="{'paused': state.newsTickerPaused}">
+                                    <div class="ticker-decoration">
+                                        <div class="ticker-dot"></div>
+                                        <div class="ticker-dot"></div>
+                                        <div class="ticker-dot"></div>
+                                    </div>
+                                    <div class="ticker-track">
+                                        <div class="ticker-item">
+                                            <i class="fa fa-newspaper-o ticker-icon"></i>
+                                            <span>New feature released: Task prioritization now includes AI recommendations</span>
+                                        </div>
+                                        <div class="ticker-item">
+                                            <i class="fa fa-bar-chart ticker-icon"></i>
+                                            <span>Productivity increased by 27% with the Pomodoro technique</span>
+                                        </div>
+                                        <div class="ticker-item">
+                                            <i class="fa fa-calendar-check-o ticker-icon"></i>
+                                            <span>Users completing 4+ pomodoros daily report better work-life balance</span>
+                                        </div>
+                                        <div class="ticker-item">
+                                            <i class="fa fa-lightbulb-o ticker-icon"></i>
+                                            <span>Tip: Use task categories to better organize your workflow</span>
+                                        </div>
+                                        <div class="ticker-item">
+                                            <i class="fa fa-line-chart ticker-icon"></i>
+                                            <span>Studies show taking regular breaks improves focus by up to 45%</span>
+                                        </div>
+                                    </div>
+                                    <div class="ticker-gradient-left"></div>
+                                    <div class="ticker-gradient-right"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
+                <!-- Right Column: Task Section -->
                 <div class="col-12 col-lg-4">
                     <!-- Quick Stats -->
                     <div class="card shadow-sm border-0 stats-card mb-3">
@@ -229,19 +281,36 @@
                             </div>
                             <div t-else="" class="task-selection-list">
                                 <div t-foreach="getOpenTasks()" t-as="task" t-key="task.id" 
-                                     class="task-selection-item p-2 mb-2 rounded d-flex align-items-center"
-                                     t-att-class="{'selected': state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id}"
-                                     t-on-click="() => this.selectPomodoroTask(task)">
-                                    <div class="me-2">
-                                        <div class="select-checkbox">
-                                            <i t-if="state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id" 
-                                               class="fa fa-check"></i>
+                                     class="task-selection-wrapper position-relative mb-2">
+                                    <!-- Task Item Container with Material UI styling -->
+                                    <div class="task-selection-item p-2 rounded d-flex align-items-center"
+                                         t-att-class="{'selected': state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id}"
+                                         t-att-data-task-id="task.id"
+                                         t-on-click="() => this.toggleTaskSelection(task)">
+                                        <div class="me-2">
+                                            <div class="select-checkbox" t-on-click.stop="() => this.toggleTaskSelection(task)">
+                                                <i t-if="state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id" 
+                                                   class="fa fa-check"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0 task-name" t-esc="task.name"></p>
-                                        <small t-if="task.priority === '3'" class="text-danger">Urgent</small>
-                                        <small t-elif="task.priority === '2'" class="text-warning">High Priority</small>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0 task-name" t-esc="task.name"></p>
+                                            <small t-if="task.priority === '3'" class="text-danger">Urgent</small>
+                                            <small t-elif="task.priority === '2'" class="text-warning">High Priority</small>
+                                        </div>
+                                        <!-- Material UI styled action buttons -->
+                                        <div class="task-actions d-flex">
+                                            <button class="btn btn-icon edit-btn" 
+                                                    t-on-click.stop="() => this.editTask(task.id)" 
+                                                    title="Edit task">
+                                                <i class="fa fa-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-icon delete-btn" 
+                                                    t-on-click.stop="() => this.confirmDeleteTask(task.id, task.name)" 
+                                                    title="Delete task">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -278,7 +347,30 @@
             <style>
                 .task-dashboard {
                     background-color: #f5f7fa;
+                    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, sans-serif;
+                    letter-spacing: 0.01em;
                 }
+                
+                /* Card styling enhancements for Material Design */
+                .card {
+                    border-radius: 16px;
+                    border: none;
+                    overflow: hidden;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.06), 0 3px 6px rgba(0,0,0,0.13);
+                }
+                
+                .card:hover {
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.08), 0 6px 6px rgba(0,0,0,0.12);
+                    transform: translateY(-2px);
+                }
+                
+                .card-title {
+                    font-weight: 500;
+                    letter-spacing: 0.01em;
+                    color: #212121;
+                }
+                
                 .task-card {
                     transition: transform 0.2s, box-shadow 0.2s;
                     cursor: pointer;
@@ -442,6 +534,11 @@
                     z-index: 1050;
                     animation: fadeIn 0.2s ease-out;
                     transition: opacity 0.3s ease;
+                    opacity: 0.9;
+                }
+                
+                .delete-modal-backdrop.active {
+                    opacity: 1;
                 }
                 
                 .delete-modal-backdrop.fade-out {
@@ -524,49 +621,58 @@
                 
                 /* Pomodoro Timer Styles */
                 .pomodoro-card {
-                    border-radius: 12px;
+                    border-radius: 16px;
                     background-color: #fff;
-                    transition: box-shadow 0.3s;
+                    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    height: auto;
+                    position: relative;
+                    overflow: hidden;
                 }
                 
-                .pomodoro-card:hover {
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+                .pomodoro-card::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 150px;
+                    height: 150px;
+                    background: radial-gradient(circle, rgba(66, 133, 244, 0.08) 0%, rgba(255,255,255,0) 70%);
+                    border-radius: 50%;
+                    pointer-events: none;
                 }
                 
                 .pomodoro-timer-display {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    margin: 1.5rem 0;
+                    margin: 2rem 0;
                 }
                 
                 .timer-circle {
-                    width: 240px;
-                    height: 240px;
+                    width: 220px;
+                    height: 220px;
                     border-radius: 50%;
                     background-color: #f5f5f5;
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
                 }
                 
                 .timer-progress {
-                    width: 220px;
-                    height: 220px;
+                    width: 200px;
+                    height: 200px;
                     border-radius: 50%;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     transition: background 0.3s;
-                    /* Progress styling will be applied dynamically through JavaScript */
+                    background: conic-gradient(var(--progress-color) var(--progress-percent, 0%), transparent 0%);
                 }
                 
-                /* Apply the conic gradient via JS instead of XML attribute to avoid entity reference errors */
-                
                 .timer-inner {
-                    width: 200px;
-                    height: 200px;
+                    width: 180px;
+                    height: 180px;
                     border-radius: 50%;
                     background-color: white;
                     display: flex;
@@ -580,7 +686,7 @@
                     font-size: 3rem;
                     font-weight: 600;
                     line-height: 1.2;
-                    color: #333;
+                    color: #212121;
                 }
                 
                 .timer-label {
@@ -594,7 +700,8 @@
                 }
                 
                 .pomodoro-modes .btn {
-                    padding: 0.6rem 1rem;
+                    padding: 0.5rem 0.5rem;
+                    font-size: 0.85rem;
                     font-weight: 500;
                     border-radius: 4px;
                     transition: all 0.2s ease;
@@ -605,15 +712,15 @@
                 }
                 
                 .stat-circle {
-                    width: 64px;
-                    height: 64px;
+                    width: 50px;
+                    height: 50px;
                     border-radius: 50%;
                     background-color: #f8f9fa;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     margin: 0 auto 0.5rem;
-                    font-size: 1.5rem;
+                    font-size: 1.2rem;
                     font-weight: 600;
                     color: #555;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -647,64 +754,451 @@
                 }
                 
                 .select-task-card {
-                    height: calc(100vh - 300px);
+                    height: calc(100vh - 150px);
                     overflow: hidden;
                     display: flex;
                     flex-direction: column;
+                    background-color: #fafafa;
                 }
+                
+                .select-task-card .card-body {
+                    padding: 1.25rem;
+                }
+                
                 .task-selection-list {
                     overflow-y: auto;
-                    max-height: calc(100vh - 370px);
+                    max-height: calc(100vh - 220px);
                     scrollbar-width: thin;
                     padding-right: 5px;
                     scroll-behavior: smooth;
                 }
+                
                 .task-selection-list::-webkit-scrollbar {
-                    width: 5px;
+                    width: 6px;
                 }
+                
                 .task-selection-list::-webkit-scrollbar-track {
-                    background: #f1f1f1;
+                    background: rgba(0,0,0,0.03);
                     border-radius: 10px;
                 }
+                
                 .task-selection-list::-webkit-scrollbar-thumb {
-                    background: #888;
+                    background: rgba(0,0,0,0.12);
                     border-radius: 10px;
+                    transition: background 0.3s ease;
                 }
+                
                 .task-selection-list::-webkit-scrollbar-thumb:hover {
-                    background: #555;
+                    background: rgba(0,0,0,0.2);
                 }
-                .task-selection-item {
-                    transition: all 0.2s;
-                    border-left: 3px solid transparent;
+                
+                .task-selection-wrapper {
+                    perspective: 1000px;
                 }
-                .task-selection-item:hover {
-                    background-color: rgba(0,0,0,0.03);
-                    transform: translateX(2px);
-                }
-                .task-selection-item.selected {
-                    background-color: rgba(13, 110, 253, 0.1);
-                    border-left: 3px solid #0d6efd;
-                }
+                
+                /* Enhanced Checkbox Styling */
                 .select-checkbox {
                     width: 24px;
                     height: 24px;
-                    border: 2px solid #ddd;
+                    border: 2px solid rgba(0,0,0,0.15);
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    overflow: hidden;
+                    margin-right: 4px;
                 }
+                
+                .select-checkbox:hover {
+                    border-color: #0d6efd;
+                    background-color: rgba(13, 110, 253, 0.1);
+                    transform: scale(1.05);
+                }
+                
+                .select-checkbox:active {
+                    transform: scale(0.92);
+                }
+                
+                .select-checkbox::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+                    opacity: 0;
+                    transform: scale(0);
+                    transition: transform 0.3s, opacity 0.3s;
+                }
+                
+                .select-checkbox:active::after {
+                    transform: scale(2);
+                    opacity: 1;
+                    transition: 0s;
+                }
+                
                 .selected .select-checkbox {
                     border-color: #0d6efd;
                     background-color: #0d6efd;
                     color: white;
+                    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
                 }
+                
+                /* Enhanced Task Item Styling */
+                .task-selection-item {
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border-left: 3px solid transparent;
+                    background-color: #fff;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+                    border-radius: 12px;
+                    margin-bottom: 10px;
+                    position: relative;
+                    overflow: hidden;
+                    padding: 14px !important;
+                }
+                
+                .task-selection-item::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 3px;
+                    background-color: #0d6efd;
+                    transform: scaleY(0);
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border-radius: 3px;
+                }
+                
+                .task-selection-item.selected::before {
+                    transform: scaleY(1);
+                }
+                
+                .task-selection-item:hover {
+                    background-color: #fafafa;
+                    transform: translateY(-2px) rotateX(2deg);
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                }
+                
+                .task-selection-item.selected {
+                    background-color: rgba(13, 110, 253, 0.05);
+                    border-left: 3px solid #0d6efd;
+                    box-shadow: 0 2px 10px rgba(13, 110, 253, 0.15);
+                }
+                
                 .task-name {
                     font-weight: 500;
-                    color: #444;
+                    color: #424242;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    font-size: 0.95rem;
+                    letter-spacing: 0.01em;
+                }
+                
+                /* Material UI Action Button Styles */
+                .btn-icon {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    background-color: transparent;
+                    color: #757575;
+                    transition: all 0.2s ease;
+                    padding: 0;
+                    margin-left: 4px;
+                    box-shadow: none;
+                }
+                
+                .btn-icon:hover {
+                    background-color: rgba(0, 0, 0, 0.08);
+                    color: #424242;
+                }
+                
+                .btn-icon:active {
+                    background-color: rgba(0, 0, 0, 0.12);
+                    transform: scale(0.96);
+                }
+                
+                .btn-icon:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+                }
+                
+                .edit-btn:hover {
+                    color: #2196F3;
+                }
+                
+                .delete-btn:hover {
+                    color: #F44336;
+                }
+                
+                .task-actions {
+                    opacity: 0.3;
+                    transition: opacity 0.2s ease;
+                }
+                
+                .task-selection-item:hover .task-actions {
+                    opacity: 1;
+                }
+                
+                /* Add ripple effect for Material UI feel */
+                .btn-icon {
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .btn-icon::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+                    opacity: 0;
+                    transform: scale(0);
+                    transition: transform 0.3s, opacity 0.3s;
+                }
+                
+                .btn-icon:active::after {
+                    transform: scale(2);
+                    opacity: 1;
+                    transition: 0s;
+                }
+                
+                /* News Ticker Styles */
+                .news-ticker-card {
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                }
+                
+                .news-ticker-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, 
+                        rgba(255,255,255,0.15) 0%, 
+                        rgba(255,255,255,0) 50%, 
+                        rgba(255,255,255,0.15) 100%);
+                    transform: translateX(-100%);
+                    animation: shimmer 8s infinite;
+                    pointer-events: none;
+                }
+                
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    20% { transform: translateX(100%); }
+                    100% { transform: translateX(100%); }
+                }
+                
+                .news-ticker-card:hover {
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+                    transform: translateY(-2px);
+                }
+                
+                .news-ticker-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100px;
+                }
+                
+                .news-ticker-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 16px;
+                    background-color: #0d6efd;
+                    color: white;
+                    height: 50px;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .news-ticker-header::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, 
+                        rgba(255,255,255,0) 0%, 
+                        rgba(255,255,255,0.1) 100%);
+                    pointer-events: none;
+                }
+                
+                .ticker-label {
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                    letter-spacing: 0.05em;
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .ticker-pulse {
+                    display: inline-block;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background-color: #ff4757;
+                    margin-right: 12px;
+                    position: relative;
+                }
+                
+                .ticker-pulse::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 50%;
+                    background-color: #ff4757;
+                    animation: pulse 2s infinite;
+                    z-index: 0;
+                }
+                
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 1; }
+                    100% { transform: scale(3); opacity: 0; }
+                }
+                
+                .ticker-control .btn-icon {
+                    width: 32px;
+                    height: 32px;
+                    color: white;
+                    margin: 0;
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+                
+                .ticker-control .btn-icon:hover {
+                    background-color: rgba(255, 255, 255, 0.2);
+                    transform: scale(1.1);
+                }
+                
+                .news-ticker-content {
+                    position: relative;
+                    height: 50px;
+                    overflow: hidden;
+                    background-color: white;
+                }
+                
+                .ticker-decoration {
+                    position: absolute;
+                    top: 4px;
+                    left: 10px;
+                    z-index: 2;
+                    display: flex;
+                    gap: 4px;
+                }
+                
+                .ticker-dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background-color: #ddd;
+                }
+                
+                .ticker-gradient-left, .ticker-gradient-right {
+                    position: absolute;
+                    top: 0;
+                    width: 70px;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 2;
+                }
+                
+                .ticker-gradient-left {
+                    left: 0;
+                    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+                }
+                
+                .ticker-gradient-right {
+                    right: 0;
+                    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+                }
+                
+                .ticker-track {
+                    position: absolute;
+                    white-space: nowrap;
+                    will-change: transform;
+                    animation: ticker 30s linear infinite;
+                }
+                
+                .news-ticker-content.paused .ticker-track {
+                    animation-play-state: paused;
+                }
+                
+                .ticker-item {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 0 24px;
+                    color: #333;
+                    position: relative;
+                    margin-right: 20px;
+                }
+                
+                .ticker-item::after {
+                    content: '•';
+                    position: absolute;
+                    right: -15px;
+                    color: #ccc;
+                    font-size: 1.2rem;
+                }
+                
+                .ticker-item:last-child::after {
+                    content: '';
+                }
+                
+                .ticker-icon {
+                    margin-right: 8px;
+                    color: #0d6efd;
+                    font-size: 1.1rem;
+                    display: inline-block;
+                    position: relative;
+                    z-index: 1;
+                }
+                
+                .ticker-icon::before {
+                    content: '';
+                    position: absolute;
+                    width: 24px;
+                    height: 24px;
+                    background-color: rgba(13, 110, 253, 0.1);
+                    border-radius: 50%;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: -1;
+                }
+                
+                @keyframes ticker {
+                    0% {
+                        transform: translateX(100%);
+                    }
+                    100% {
+                        transform: translateX(-100%);
+                    }
+                }
+                
+                /* Responsive adjustments */
+                @media (min-width: 992px) {
+                    .select-task-card {
+                        margin-left: 10px;
+                    }
+                    
+                    .pomodoro-card, .news-ticker-card {
+                        margin-right: 10px;
+                    }
                 }
             </style>
         </div>

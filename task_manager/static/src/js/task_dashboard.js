@@ -61,7 +61,17 @@ class TaskDashboard extends Component {
             pomodoroGoal: 4,
             currentPomodoroStreak: 0,
             selectedPomodoroTask: null,
-            timerIntervalId: null
+            timerIntervalId: null,
+            
+            // News Ticker State
+            newsTickerPaused: false,
+            newsItems: [
+                { icon: 'newspaper-o', text: 'New feature released: Task prioritization now includes AI recommendations' },
+                { icon: 'bar-chart', text: 'Productivity increased by 27% with the Pomodoro technique' },
+                { icon: 'calendar-check-o', text: 'Users completing 4+ pomodoros daily report better work-life balance' },
+                { icon: 'lightbulb-o', text: 'Tip: Use task categories to better organize your workflow' },
+                { icon: 'line-chart', text: 'Studies show taking regular breaks improves focus by up to 45%' }
+            ]
         });
 
         this.orm = useService("orm");
@@ -429,6 +439,8 @@ class TaskDashboard extends Component {
                 this.state.editTaskId = taskId;
                 this.state.showTaskModal = true;
                 
+                this.showSnackbar("Editing task: " + task[0].name);
+                
                 // Focus the input field after task is loaded
                 setTimeout(() => {
                     const titleInput = document.querySelector('.task-modal-content input[type="text"]');
@@ -453,6 +465,13 @@ class TaskDashboard extends Component {
             name: taskName
         };
         this.state.showDeleteModal = true;
+        // Add animation to the modal entrance
+        setTimeout(() => {
+            const modalElement = document.querySelector('.delete-modal-backdrop');
+            if (modalElement) {
+                modalElement.classList.add('active');
+            }
+        }, 10);
     }
 
     cancelDelete() {
@@ -780,8 +799,22 @@ class TaskDashboard extends Component {
     }
     
     selectPomodoroTask(task) {
+        // Set the selected task
         this.state.selectedPomodoroTask = task;
         this.showSnackbar(`Task "${task.name}" selected for focus session`);
+    }
+    
+    toggleTaskSelection(task) {
+        // Toggle selection - if the task is already selected, deselect it
+        if (this.state.selectedPomodoroTask && this.state.selectedPomodoroTask.id === task.id) {
+            // Currently selected, so deselect it
+            this.state.selectedPomodoroTask = null;
+            this.showSnackbar(`Deselected task "${task.name}"`);
+        } else {
+            // Not selected, so select it
+            this.state.selectedPomodoroTask = task;
+            this.showSnackbar(`Selected task "${task.name}" for focus session`);
+        }
     }
     
     clearPomodoroTask() {
@@ -796,6 +829,12 @@ class TaskDashboard extends Component {
         return this.state.taskData.recent_tasks.filter(
             task => !['done', 'cancelled'].includes(task.state)
         ); // Remove the 10-task limit since we have a scrollable view now
+    }
+
+    // News Ticker Functions
+    toggleNewsTickerPause() {
+        this.state.newsTickerPaused = !this.state.newsTickerPaused;
+        this.showSnackbar(this.state.newsTickerPaused ? "News ticker paused" : "News ticker resumed");
     }
 }
 
