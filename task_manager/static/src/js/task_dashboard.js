@@ -34,13 +34,34 @@ class TaskDashboard extends Component {
             users: [],
             showSnackbar: false,
             snackbarMessage: "",
-            filterStatus: "all",
             showDeleteModal: false,
             deleteTask: {
                 id: null,
                 name: ""
             },
-            isSubmitting: false
+            isSubmitting: false,
+            
+            // Pomodoro Timer State
+            timerActive: false,
+            timerMinutes: 25,
+            timerSeconds: 0,
+            timerProgress: 0,
+            timerMode: {
+                id: 'focus',
+                label: 'Focus Time',
+                duration: 25,
+                color: '#4285f4'
+            },
+            timerModes: {
+                focus: { id: 'focus', label: 'Focus Time', duration: 25, color: '#4285f4' },
+                shortBreak: { id: 'shortBreak', label: 'Short Break', duration: 5, color: '#34a853' },
+                longBreak: { id: 'longBreak', label: 'Long Break', duration: 15, color: '#4285f4' }
+            },
+            completedPomodoros: 0,
+            pomodoroGoal: 4,
+            currentPomodoroStreak: 0,
+            selectedPomodoroTask: null,
+            timerIntervalId: null
         });
 
         this.orm = useService("orm");
@@ -67,6 +88,17 @@ class TaskDashboard extends Component {
     // Cleanup when component is destroyed
     __destroy() {
         document.removeEventListener('keydown', this.escKeyHandler);
+        
+        // Clear any active timer
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+        }
+        
+        // Play notification sound if it exists
+        if (this.audioElement) {
+            this.audioElement.pause();
+            this.audioElement = null;
+        }
     }
     
     // Handle escape key globally
@@ -486,50 +518,37 @@ class TaskDashboard extends Component {
 
     async markTaskDone(taskId) {
         try {
-            await this.orm.call("task.task", "action_done", [taskId]);
+            await this.orm.call(
+                "task.task",
+                "action_done",
+                [[taskId]]
+            );
             this.showSnackbar("Task marked as done");
-            await this.fetchDashboardData();
+            this.refreshData();
         } catch (error) {
             console.error("Error marking task as done:", error);
-            this.notification.add("Failed to update task status", {
-                type: "danger",
-            });
         }
     }
 
     async startTask(taskId) {
         try {
-            await this.orm.call("task.task", "action_start", [taskId]);
+            await this.orm.call(
+                "task.task",
+                "action_start",
+                [[taskId]]
+            );
             this.showSnackbar("Task started");
-            await this.fetchDashboardData();
+            this.refreshData();
         } catch (error) {
             console.error("Error starting task:", error);
-            this.notification.add("Failed to update task status", {
-                type: "danger",
-            });
         }
-    }
-
-    filterTasks(status) {
-        this.state.filterStatus = status;
-    }
-
-    getFilteredTasks() {
-        if (!this.state.taskData.recent_tasks) return [];
-        
-        if (this.state.filterStatus === "all") {
-            return this.state.taskData.recent_tasks;
-        }
-        
-        return this.state.taskData.recent_tasks.filter(
-            task => task.state === this.state.filterStatus
-        );
     }
 
     showSnackbar(message) {
         this.state.snackbarMessage = message;
         this.state.showSnackbar = true;
         
+        // Hide snackbar after 3 seconds
         setTimeout(() => {
             this.state.showSnackbar = false;
         }, 3000);
@@ -592,6 +611,191 @@ class TaskDashboard extends Component {
             '3': 'Urgent'
         };
         return names[priority] || 'Normal';
+    }
+
+    // Pomodoro Timer Functions
+    startPomodoro() {
+        if (this.state.timerActive) return;
+        
+        this.state.timerActive = true;
+        
+        // Reset the timer to the current mode's duration
+        this.state.timerMinutes = this.state.timerMode.duration;
+        this.state.timerSeconds = 0;
+        this.state.timerProgress = 0;
+        
+        // Apply the color to the progress circle
+        this.updateTimerStyle();
+        
+        // Calculate total seconds for the progress calculation
+        const totalSeconds = this.state.timerMode.duration * 60;
+        let elapsedSeconds = 0;
+        
+        // Clear any existing interval
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+        }
+        
+        // Start the timer interval
+        const intervalId = setInterval(() => {
+            // Update seconds and minutes
+            if (this.state.timerSeconds === 0) {
+                if (this.state.timerMinutes === 0) {
+                    // Timer complete
+                    this.timerComplete();
+                    return;
+                }
+                this.state.timerMinutes--;
+                this.state.timerSeconds = 59;
+            } else {
+                this.state.timerSeconds--;
+            }
+            
+            // Update progress percentage
+            elapsedSeconds++;
+            this.state.timerProgress = Math.round((elapsedSeconds / totalSeconds) * 100);
+            
+            // Update the progress circle style
+            this.updateTimerStyle();
+            
+        }, 1000);
+        
+        this.state.timerIntervalId = intervalId;
+        
+        // Show notification
+        this.showSnackbar(`${this.state.timerMode.label} started`);
+    }
+    
+    updateTimerStyle() {
+        // Find the timer-progress element and update its CSS variables
+        setTimeout(() => {
+            const progressEl = document.querySelector('.timer-progress');
+            if (progressEl) {
+                progressEl.style.setProperty('--progress-percent', `${this.state.timerProgress}%`);
+                progressEl.style.setProperty('--progress-color', this.state.timerMode.color);
+            }
+        }, 0);
+    }
+    
+    stopPomodoro() {
+        if (!this.state.timerActive) return;
+        
+        // Clear the interval
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+            this.state.timerIntervalId = null;
+        }
+        
+        this.state.timerActive = false;
+        
+        // Reset the timer to the current mode's duration
+        this.state.timerMinutes = this.state.timerMode.duration;
+        this.state.timerSeconds = 0;
+        this.state.timerProgress = 0;
+        
+        // Show notification
+        this.showSnackbar(`${this.state.timerMode.label} stopped`);
+    }
+    
+    timerComplete() {
+        // Clear the interval
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+            this.state.timerIntervalId = null;
+        }
+        
+        // Play notification sound if available
+        this.playNotificationSound();
+        
+        // Update completed count and streak if it was a focus session
+        if (this.state.timerMode.id === 'focus') {
+            this.state.completedPomodoros++;
+            this.state.currentPomodoroStreak++;
+            
+            // If we have a selected task, mark progress
+            if (this.state.selectedPomodoroTask) {
+                // Get the selected task data
+                const taskId = this.state.selectedPomodoroTask.id;
+                
+                // If task is in draft, start it
+                if (this.state.selectedPomodoroTask.state === 'draft') {
+                    this.startTask(taskId);
+                    
+                    // Update the stored task
+                    this.state.selectedPomodoroTask.state = 'in_progress';
+                }
+            }
+            
+            // Show notification
+            this.showSnackbar("Focus session completed! Take a break.");
+            
+            // Auto switch to short break or long break
+            if (this.state.currentPomodoroStreak % 4 === 0) {
+                this.setTimerMode('longBreak');
+            } else {
+                this.setTimerMode('shortBreak');
+            }
+        } else {
+            // Break time completed
+            this.showSnackbar("Break time completed! Ready for another focus session?");
+            this.setTimerMode('focus');
+        }
+        
+        this.state.timerActive = false;
+    }
+    
+    setTimerMode(modeId) {
+        const mode = this.state.timerModes[modeId];
+        if (!mode) return;
+        
+        // Stop any active timer
+        if (this.state.timerActive) {
+            this.stopPomodoro();
+        }
+        
+        // Set the new mode
+        this.state.timerMode = mode;
+        this.state.timerMinutes = mode.duration;
+        this.state.timerSeconds = 0;
+        this.state.timerProgress = 0;
+        
+        // Update the progress circle style
+        this.updateTimerStyle();
+    }
+    
+    formatTime(value) {
+        return value < 10 ? `0${value}` : `${value}`;
+    }
+    
+    playNotificationSound() {
+        try {
+            if (!this.audioElement) {
+                this.audioElement = new Audio();
+                this.audioElement.src = '/mscl_owl_addons/task_manager/static/src/sounds/notification.mp3';
+            }
+            this.audioElement.play();
+        } catch (error) {
+            console.error("Error playing notification sound:", error);
+        }
+    }
+    
+    selectPomodoroTask(task) {
+        this.state.selectedPomodoroTask = task;
+        this.showSnackbar(`Task "${task.name}" selected for focus session`);
+    }
+    
+    clearPomodoroTask() {
+        this.state.selectedPomodoroTask = null;
+        this.showSnackbar("Task unselected");
+    }
+    
+    getOpenTasks() {
+        // Get tasks that are not done or cancelled
+        if (!this.state.taskData.recent_tasks) return [];
+        
+        return this.state.taskData.recent_tasks.filter(
+            task => !['done', 'cancelled'].includes(task.state)
+        ); // Remove the 10-task limit since we have a scrollable view now
     }
 }
 
