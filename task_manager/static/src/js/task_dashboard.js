@@ -71,7 +71,19 @@ class TaskDashboard extends Component {
                 { icon: 'calendar-check-o', text: 'Users completing 4+ pomodoros daily report better work-life balance' },
                 { icon: 'lightbulb-o', text: 'Tip: Use task categories to better organize your workflow' },
                 { icon: 'line-chart', text: 'Studies show taking regular breaks improves focus by up to 45%' }
-            ]
+            ],
+            
+            // Weather State
+            weather: {
+                loading: true,
+                error: null,
+                data: null,
+                location: {
+                    lat: null,
+                    lon: null,
+                    city: ''
+                }
+            }
         });
 
         this.orm = useService("orm");
@@ -92,6 +104,9 @@ class TaskDashboard extends Component {
                 this.fetchUsers(),
                 this.fetchDashboardData()
             ]);
+            
+            // Initialize weather data
+            this.initWeather();
         });
     }
     
@@ -109,6 +124,84 @@ class TaskDashboard extends Component {
             this.audioElement.pause();
             this.audioElement = null;
         }
+    }
+    
+    // Weather Functions
+    async initWeather() {
+        try {
+            this.state.weather.loading = true;
+            
+            // Try to get location from browser
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        this.state.weather.location = {
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        };
+                        this.fetchWeatherData();
+                    },
+                    error => {
+                        console.error("Geolocation error:", error);
+                        // Fallback to a default location (Paris)
+                        this.state.weather.location = { lat: 48.8566, lon: 2.3522 };
+                        this.fetchWeatherData();
+                    }
+                );
+            } else {
+                // Geolocation not supported, use default location
+                this.state.weather.location = { lat: 48.8566, lon: 2.3522 };
+                this.fetchWeatherData();
+            }
+        } catch (error) {
+            console.error("Weather initialization error:", error);
+            this.state.weather.loading = false;
+            this.state.weather.error = "Could not initialize weather service";
+        }
+    }
+    
+    async fetchWeatherData() {
+        try {
+            this.state.weather.loading = true;
+            this.state.weather.error = null;
+            
+            // Get API key from system parameters (should be stored in Odoo)
+            const apiKeyResult = await this.orm.call(
+                "ir.config_parameter",
+                "get_param",
+                ["task_manager.openweather_api_key"]
+            );
+            
+            // Check if API key is available
+            const apiKey = apiKeyResult || '7d85dc6895579f718c0a92dabc2b9b89'; // Demo API key (limited usage)
+            
+            if (!apiKey) {
+                throw new Error("OpenWeather API key not configured");
+            }
+            
+            // Make API request to OpenWeatherMap
+            const { lat, lon } = this.state.weather.location;
+            const response = await fetch(
+                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+            );
+            
+            if (!response.ok) {
+                throw new Error(`Weather API error: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            this.state.weather.data = data;
+            this.state.weather.loading = false;
+            
+        } catch (error) {
+            console.error("Weather data fetch error:", error);
+            this.state.weather.loading = false;
+            this.state.weather.error = "Could not load weather data";
+        }
+    }
+    
+    refreshWeather() {
+        this.fetchWeatherData();
     }
     
     // Handle escape key globally
@@ -840,4 +933,4 @@ class TaskDashboard extends Component {
 
 registry.category("actions").add("task_manager.dashboard", TaskDashboard);
 
-export default TaskDashboard; 
+export default TaskDashboard;

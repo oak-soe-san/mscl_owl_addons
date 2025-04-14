@@ -193,51 +193,121 @@
                         </div>
                     </div>
                     
-                    <!-- Trade News Ticker Widget -->
-                    <div class="card shadow-sm border-0 news-ticker-card">
-                        <div class="card-body p-0">
-                            <div class="news-ticker-container">
-                                <div class="news-ticker-header">
-                                    <div class="ticker-label">
-                                        <span class="ticker-pulse"></span>
-                                        LATEST UPDATES
-                                    </div>
-                                    <div class="ticker-control">
-                                        <button class="btn btn-icon ticker-btn" t-on-click="toggleNewsTickerPause">
-                                            <i t-attf-class="fa {{state.newsTickerPaused ? 'fa-play' : 'fa-pause'}}"></i>
-                                        </button>
+                    <!-- News Ticker and Weather Section -->
+                    <div class="row g-0">
+                        <!-- Latest Updates - Left Side -->
+                        <div class="col-7 pe-2">
+                            <div class="card shadow-sm border-0 news-ticker-card">
+                                <div class="card-body p-0">
+                                    <div class="news-ticker-container">
+                                        <div class="news-ticker-header">
+                                            <div class="ticker-label">
+                                                <span class="ticker-pulse"></span>
+                                                LATEST UPDATES
+                                            </div>
+                                            <div class="ticker-control">
+                                                <button class="btn btn-icon ticker-btn" t-on-click="toggleNewsTickerPause">
+                                                    <i t-attf-class="fa {{state.newsTickerPaused ? 'fa-play' : 'fa-pause'}}"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="news-ticker-content" t-att-class="{'paused': state.newsTickerPaused}">
+                                            <div class="ticker-decoration">
+                                                <div class="ticker-dot"></div>
+                                                <div class="ticker-dot"></div>
+                                                <div class="ticker-dot"></div>
+                                            </div>
+                                            <div class="ticker-track">
+                                                <div class="ticker-item">
+                                                    <i class="fa fa-newspaper-o ticker-icon"></i>
+                                                    <span>New feature released: Task prioritization now includes AI recommendations</span>
+                                                </div>
+                                                <div class="ticker-item">
+                                                    <i class="fa fa-bar-chart ticker-icon"></i>
+                                                    <span>Productivity increased by 27% with the Pomodoro technique</span>
+                                                </div>
+                                                <div class="ticker-item">
+                                                    <i class="fa fa-calendar-check-o ticker-icon"></i>
+                                                    <span>Users completing 4+ pomodoros daily report better work-life balance</span>
+                                                </div>
+                                                <div class="ticker-item">
+                                                    <i class="fa fa-lightbulb-o ticker-icon"></i>
+                                                    <span>Tip: Use task categories to better organize your workflow</span>
+                                                </div>
+                                                <div class="ticker-item">
+                                                    <i class="fa fa-line-chart ticker-icon"></i>
+                                                    <span>Studies show taking regular breaks improves focus by up to 45%</span>
+                                                </div>
+                                            </div>
+                                            <div class="ticker-gradient-left"></div>
+                                            <div class="ticker-gradient-right"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="news-ticker-content" t-att-class="{'paused': state.newsTickerPaused}">
-                                    <div class="ticker-decoration">
-                                        <div class="ticker-dot"></div>
-                                        <div class="ticker-dot"></div>
-                                        <div class="ticker-dot"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weather Widget - Right Side -->
+                        <div class="col-5 ps-2">
+                            <div class="card shadow-sm border-0 weather-card">
+                                <div class="card-body p-0">
+                                    <div class="weather-container" t-att-class="{'loading': !state.weather || state.weather.loading}">
+                                        <div class="weather-header">
+                                            <h6 class="m-0">Weather</h6>
+                                            <button class="btn btn-icon refresh-btn" t-on-click="refreshWeather">
+                                                <i class="fa fa-refresh"></i>
+                                            </button>
+                                        </div>
+                                        <div class="weather-content">
+                                            <!-- Loading State -->
+                                            <div t-if="!state.weather || state.weather.loading" class="weather-loading">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="m-0 mt-2">Loading weather...</p>
+                                            </div>
+                                            
+                                            <!-- Error State -->
+                                            <div t-elif="state.weather.error" class="weather-error">
+                                                <i class="fa fa-exclamation-triangle text-warning"></i>
+                                                <p class="m-0 mt-2" t-esc="state.weather.error"></p>
+                                                <button class="btn btn-sm btn-outline-primary mt-2" t-on-click="refreshWeather">
+                                                    Retry
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Weather Data -->
+                                            <div t-else="" class="weather-data">
+                                                <div class="city-info">
+                                                    <h5 class="city-name" t-esc="state.weather.data.name"></h5>
+                                                    <p class="country" t-esc="state.weather.data.sys.country"></p>
+                                                </div>
+                                                <div class="temp-container">
+                                                    <div class="weather-icon">
+                                                        <img t-if="state.weather.data.weather[0].icon" 
+                                                             t-att-src="'https://openweathermap.org/img/wn/' + state.weather.data.weather[0].icon + '@2x.png'" 
+                                                             t-att-alt="state.weather.data.weather[0].description" />
+                                                    </div>
+                                                    <div class="temp-data">
+                                                        <h2 class="temperature">
+                                                            <span t-esc="Math.round(state.weather.data.main.temp)"></span>°C
+                                                        </h2>
+                                                        <p class="weather-desc" t-esc="state.weather.data.weather[0].description"></p>
+                                                    </div>
+                                                </div>
+                                                <div class="weather-details">
+                                                    <div class="detail">
+                                                        <i class="fa fa-tint"></i>
+                                                        <span t-esc="state.weather.data.main.humidity + '%'"></span>
+                                                    </div>
+                                                    <div class="detail">
+                                                        <i class="fa fa-wind"></i>
+                                                        <span t-esc="Math.round(state.weather.data.wind.speed) + ' m/s'"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="ticker-track">
-                                        <div class="ticker-item">
-                                            <i class="fa fa-newspaper-o ticker-icon"></i>
-                                            <span>New feature released: Task prioritization now includes AI recommendations</span>
-                                        </div>
-                                        <div class="ticker-item">
-                                            <i class="fa fa-bar-chart ticker-icon"></i>
-                                            <span>Productivity increased by 27% with the Pomodoro technique</span>
-                                        </div>
-                                        <div class="ticker-item">
-                                            <i class="fa fa-calendar-check-o ticker-icon"></i>
-                                            <span>Users completing 4+ pomodoros daily report better work-life balance</span>
-                                        </div>
-                                        <div class="ticker-item">
-                                            <i class="fa fa-lightbulb-o ticker-icon"></i>
-                                            <span>Tip: Use task categories to better organize your workflow</span>
-                                        </div>
-                                        <div class="ticker-item">
-                                            <i class="fa fa-line-chart ticker-icon"></i>
-                                            <span>Studies show taking regular breaks improves focus by up to 45%</span>
-                                        </div>
-                                    </div>
-                                    <div class="ticker-gradient-left"></div>
-                                    <div class="ticker-gradient-right"></div>
                                 </div>
                             </div>
                         </div>
@@ -246,66 +316,53 @@
                 
                 <!-- Right Column: Task Section -->
                 <div class="col-12 col-lg-4">
-                    <!-- Quick Stats -->
-                    <div class="card shadow-sm border-0 stats-card mb-3">
-                        <div class="card-body p-3">
-                            <h5 class="card-title mb-3">Tasks Overview</h5>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">Total Tasks</span>
-                                <span class="badge bg-primary rounded-pill" t-esc="state.taskData.total || 0"></span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">Pending</span>
-                                <span class="badge bg-warning rounded-pill" t-esc="(state.taskData.new || 0) + (state.taskData.in_progress || 0)"></span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">Completed</span>
-                                <span class="badge bg-success rounded-pill" t-esc="state.taskData.done || 0"></span>
-                            </div>
+                    <!-- Task Selection Card -->
+                    <div class="card shadow-sm border-0 task-focus-card">
+                        <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-danger">Overdue</span>
-                                <span class="badge bg-danger rounded-pill" t-esc="state.taskData.overdue || 0"></span>
+                                <h5 class="mb-0">Select Task for Focus</h5>
+                                <button class="btn btn-sm btn-primary rounded-circle add-task-btn" t-on-click="toggleTaskModal">
+                                    <i class="fa fa-plus"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Task Selection Card (for Pomodoro) -->
-                    <div class="card shadow-sm border-0 select-task-card">
-                        <div class="card-body p-3">
-                            <h5 class="card-title mb-3">Select Task for Focus</h5>
-                            <div t-if="getOpenTasks().length === 0" class="text-center p-3">
-                                <p class="text-muted">No open tasks available</p>
+                        <div class="card-body p-0">
+                            <div t-if="getOpenTasks().length === 0" class="empty-state">
+                                <div class="empty-tasks-icon">
+                                    <i class="fa fa-tasks"></i>
+                                </div>
+                                <p>No open tasks available</p>
                                 <button class="btn btn-sm btn-primary" t-on-click="toggleTaskModal">
                                     <i class="fa fa-plus me-1"></i> Create Task
                                 </button>
                             </div>
-                            <div t-else="" class="task-selection-list">
+                            <div t-else="" class="task-list">
                                 <div t-foreach="getOpenTasks()" t-as="task" t-key="task.id" 
-                                     class="task-selection-wrapper position-relative mb-2">
-                                    <!-- Task Item Container with Material UI styling -->
-                                    <div class="task-selection-item p-2 rounded d-flex align-items-center"
+                                     class="task-item-wrapper">
+                                    <div class="task-item"
                                          t-att-class="{'selected': state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id}"
                                          t-att-data-task-id="task.id"
                                          t-on-click="() => this.toggleTaskSelection(task)">
-                                        <div class="me-2">
-                                            <div class="select-checkbox" t-on-click.stop="() => this.toggleTaskSelection(task)">
+                                        <div class="task-checkbox" t-on-click.stop="() => this.toggleTaskSelection(task)">
+                                            <div class="checkbox-circle">
                                                 <i t-if="state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id" 
                                                    class="fa fa-check"></i>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <p class="mb-0 task-name" t-esc="task.name"></p>
-                                            <small t-if="task.priority === '3'" class="text-danger">Urgent</small>
-                                            <small t-elif="task.priority === '2'" class="text-warning">High Priority</small>
+                                        <div class="task-details">
+                                            <div class="task-name" t-esc="task.name"></div>
+                                            <div class="task-meta">
+                                                <span t-if="task.priority === '3'" class="priority urgent">Urgent</span>
+                                                <span t-elif="task.priority === '2'" class="priority high">High Priority</span>
+                                            </div>
                                         </div>
-                                        <!-- Material UI styled action buttons -->
-                                        <div class="task-actions d-flex">
-                                            <button class="btn btn-icon edit-btn" 
+                                        <div class="task-actions">
+                                            <button class="action-btn edit-btn" 
                                                     t-on-click.stop="() => this.editTask(task.id)" 
                                                     title="Edit task">
                                                 <i class="fa fa-pencil"></i>
                                             </button>
-                                            <button class="btn btn-icon delete-btn" 
+                                            <button class="action-btn delete-btn" 
                                                     t-on-click.stop="() => this.confirmDeleteTask(task.id, task.name)" 
                                                     title="Delete task">
                                                 <i class="fa fa-trash"></i>
@@ -345,6 +402,12 @@
 
             <!-- CSS Styles -->
             <style>
+                /* General transition for all interactive elements with slower fade */
+                button, .card, .task-card, .task-item, .task-checkbox,
+                .btn-icon, .select-checkbox, .action-btn {
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+                }
+                
                 .task-dashboard {
                     background-color: #f5f7fa;
                     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, sans-serif;
@@ -356,7 +419,7 @@
                     border-radius: 16px;
                     border: none;
                     overflow: hidden;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
                     box-shadow: 0 3px 6px rgba(0,0,0,0.06), 0 3px 6px rgba(0,0,0,0.13);
                 }
                 
@@ -369,44 +432,275 @@
                     font-weight: 500;
                     letter-spacing: 0.01em;
                     color: #212121;
+                    font-size: 1.1rem;
                 }
                 
-                .task-card {
-                    transition: transform 0.2s, box-shadow 0.2s;
-                    cursor: pointer;
+                /* Standardized right column cards - consistent styling for both cards */
+                .task-side-card {
+                    border-radius: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+                    width: 100%;
+                    background-color: #ffffff;
+                    margin-bottom: 1rem;
+                    height: auto;
                 }
-                .task-card:hover {
+                
+                .task-side-card:hover {
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
                     transform: translateY(-3px);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+                    background-color: #fafafa;
                 }
-                .task-list-card {
-                    height: calc(100vh - 300px);
-                    overflow: hidden;
+                
+                .task-side-card .card-body {
+                    padding: 1.25rem 1rem 1rem 1rem !important;
+                }
+                
+                /* Select task card specific styling - Updated positioning */
+                .select-task-card {
+                    flex: 1;
+                    min-height: 450px;
+                    max-height: calc(100vh - 150px);
                     display: flex;
                     flex-direction: column;
+                    margin-top: -10px; /* Move closer to pomodoro timer */
+                    border-top: 4px solid #e1f5fe; /* Light sky blue top border */
+                    transition: all 0.3s ease;
                 }
-                .task-list {
+                
+                .select-task-card:hover {
+                    border-top-color: #4fc3f7; /* Brighter sky blue on hover */
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(66, 165, 245, 0.15);
+                }
+                
+                .select-task-card .card-title {
+                    color: #0d6efd;
+                    font-size: 1.15rem;
+                    font-weight: 500;
+                    letter-spacing: 0.01em;
+                    border-bottom: 1px solid #e9ecef;
+                    padding-bottom: 0.75rem;
+                }
+                
+                .task-selection-list {
                     overflow-y: auto;
-                    max-height: calc(100vh - 370px);
+                    height: calc(100% - 50px);
+                    scrollbar-width: thin;
+                    padding-right: 5px;
+                    scroll-behavior: smooth;
+                    margin-top: 0.5rem;
                 }
-                .task-item {
-                    transition: background-color 0.2s;
+                
+                /* Task Item Styling - Fixed Version with Sky Blue Accent */
+                .task-selection-item {
+                    position: relative;
+                    padding: 12px 14px;
+                    margin-bottom: 10px;
+                    border-radius: 12px;
+                    background-color: #fff;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+                    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                    cursor: pointer;
+                    min-height: 58px; 
+                    border-left: 3px solid transparent;
+                    overflow: hidden; /* For the after pseudo-element */
                 }
-                .task-item:hover {
-                    background-color: rgba(0,0,0,0.02);
+                
+                .task-selection-item::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 3px;
+                    background-color: transparent;
+                    border-radius: 3px 0 0 3px;
+                    transition: background-color 0.3s ease;
                 }
-                .task-checkbox {
+                
+                .task-selection-item::after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: -2px;
+                    height: 2px;
+                    background-color: #4fc3f7; /* Sky blue accent */
+                    transform: scaleX(0);
+                    transform-origin: 0 50%;
+                    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                
+                .task-selection-item:hover::after {
+                    transform: scaleX(1);
+                }
+                
+                .task-selection-item.selected::before {
+                    background-color: #4285f4;
+                }
+                
+                .task-selection-item:hover {
+                    background-color: #f8f9fa;
+                    transform: translateX(3px);
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+                    border-bottom: none; /* Remove default border bottom if any */
+                }
+                
+                .task-selection-item.selected {
+                    background-color: #e8f5ff; /* Lighter blue background */
+                    border-left: 3px solid #0d6efd;
+                    box-shadow: 0 2px 10px rgba(13, 110, 253, 0.15);
+                }
+                
+                .task-selection-item.selected::after {
+                    transform: scaleX(1);
+                    background-color: #2196f3; /* Darker blue for selected items */
+                }
+                
+                .task-content {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    min-width: 0; /* Prevent flex items from overflowing */
+                }
+                
+                .task-name {
+                    font-weight: 500;
+                    color: #424242;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    font-size: 0.95rem;
+                    letter-spacing: 0.01em;
+                    line-height: 1.2;
+                }
+
+                .task-actions {
+                    display: flex;
+                    opacity: 0.3;
+                    transition: opacity 0.2s ease;
+                    margin-left: 8px;
+                    align-self: center;
+                }
+                
+                .task-selection-item:hover .task-actions {
+                    opacity: 1;
+                }
+                
+                /* Enhanced Checkbox Styling */
+                .select-checkbox {
                     width: 24px;
                     height: 24px;
+                    border: 2px solid rgba(0,0,0,0.15);
+                    border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
-                    transition: background-color 0.2s;
+                    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                    position: relative;
+                    overflow: hidden;
+                    margin-right: 8px;
+                    flex-shrink: 0;
+                    align-self: center;
                 }
-                .task-checkbox:hover {
-                    background-color: rgba(0,0,0,0.1);
+                
+                .select-checkbox:hover {
+                    border-color: #0d6efd;
+                    background-color: rgba(13, 110, 253, 0.1);
+                    transform: scale(1.05);
                 }
+                
+                .select-checkbox:active {
+                    transform: scale(0.92);
+                }
+                
+                .select-checkbox::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+                    opacity: 0;
+                    transform: scale(0);
+                    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                
+                .select-checkbox:active::after {
+                    transform: scale(2);
+                    opacity: 1;
+                    transition: 0s;
+                }
+                
+                .selected .select-checkbox {
+                    border-color: #0d6efd;
+                    background-color: #0d6efd;
+                    color: white;
+                    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+                }
+                
+                /* Material UI Action Button Styles */
+                .btn-icon {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    background-color: transparent;
+                    color: #757575;
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    padding: 0;
+                    margin-left: 4px;
+                    box-shadow: none;
+                    flex-shrink: 0;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .btn-icon:hover {
+                    background-color: rgba(0, 0, 0, 0.08);
+                    color: #424242;
+                }
+                
+                .btn-icon:active {
+                    background-color: rgba(0, 0, 0, 0.12);
+                    transform: scale(0.96);
+                }
+                
+                .btn-icon:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+                }
+                
+                .edit-btn:hover {
+                    color: #2196F3;
+                }
+                
+                .delete-btn:hover {
+                    color: #F44336;
+                }
+                
+                /* Add ripple effect for Material UI feel */
+                .btn-icon::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+                    opacity: 0;
+                    transform: scale(0);
+                    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                
+                .btn-icon:active::after {
+                    transform: scale(2);
+                    opacity: 1;
+                    transition: 0s;
+                }
+                
                 .snackbar {
                     position: fixed;
                     bottom: 24px;
@@ -796,180 +1090,6 @@
                     perspective: 1000px;
                 }
                 
-                /* Enhanced Checkbox Styling */
-                .select-checkbox {
-                    width: 24px;
-                    height: 24px;
-                    border: 2px solid rgba(0,0,0,0.15);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                    position: relative;
-                    overflow: hidden;
-                    margin-right: 4px;
-                }
-                
-                .select-checkbox:hover {
-                    border-color: #0d6efd;
-                    background-color: rgba(13, 110, 253, 0.1);
-                    transform: scale(1.05);
-                }
-                
-                .select-checkbox:active {
-                    transform: scale(0.92);
-                }
-                
-                .select-checkbox::after {
-                    content: '';
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-                    opacity: 0;
-                    transform: scale(0);
-                    transition: transform 0.3s, opacity 0.3s;
-                }
-                
-                .select-checkbox:active::after {
-                    transform: scale(2);
-                    opacity: 1;
-                    transition: 0s;
-                }
-                
-                .selected .select-checkbox {
-                    border-color: #0d6efd;
-                    background-color: #0d6efd;
-                    color: white;
-                    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-                }
-                
-                /* Enhanced Task Item Styling */
-                .task-selection-item {
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    border-left: 3px solid transparent;
-                    background-color: #fff;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-                    border-radius: 12px;
-                    margin-bottom: 10px;
-                    position: relative;
-                    overflow: hidden;
-                    padding: 14px !important;
-                }
-                
-                .task-selection-item::before {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    bottom: 0;
-                    width: 3px;
-                    background-color: #0d6efd;
-                    transform: scaleY(0);
-                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    border-radius: 3px;
-                }
-                
-                .task-selection-item.selected::before {
-                    transform: scaleY(1);
-                }
-                
-                .task-selection-item:hover {
-                    background-color: #fafafa;
-                    transform: translateY(-2px) rotateX(2deg);
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                }
-                
-                .task-selection-item.selected {
-                    background-color: rgba(13, 110, 253, 0.05);
-                    border-left: 3px solid #0d6efd;
-                    box-shadow: 0 2px 10px rgba(13, 110, 253, 0.15);
-                }
-                
-                .task-name {
-                    font-weight: 500;
-                    color: #424242;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    font-size: 0.95rem;
-                    letter-spacing: 0.01em;
-                }
-                
-                /* Material UI Action Button Styles */
-                .btn-icon {
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: none;
-                    background-color: transparent;
-                    color: #757575;
-                    transition: all 0.2s ease;
-                    padding: 0;
-                    margin-left: 4px;
-                    box-shadow: none;
-                }
-                
-                .btn-icon:hover {
-                    background-color: rgba(0, 0, 0, 0.08);
-                    color: #424242;
-                }
-                
-                .btn-icon:active {
-                    background-color: rgba(0, 0, 0, 0.12);
-                    transform: scale(0.96);
-                }
-                
-                .btn-icon:focus {
-                    outline: none;
-                    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
-                }
-                
-                .edit-btn:hover {
-                    color: #2196F3;
-                }
-                
-                .delete-btn:hover {
-                    color: #F44336;
-                }
-                
-                .task-actions {
-                    opacity: 0.3;
-                    transition: opacity 0.2s ease;
-                }
-                
-                .task-selection-item:hover .task-actions {
-                    opacity: 1;
-                }
-                
-                /* Add ripple effect for Material UI feel */
-                .btn-icon {
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .btn-icon::after {
-                    content: '';
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
-                    opacity: 0;
-                    transform: scale(0);
-                    transition: transform 0.3s, opacity 0.3s;
-                }
-                
-                .btn-icon:active::after {
-                    transform: scale(2);
-                    opacity: 1;
-                    transition: 0s;
-                }
-                
                 /* News Ticker Styles */
                 .news-ticker-card {
                     border-radius: 16px;
@@ -1190,17 +1310,497 @@
                     }
                 }
                 
-                /* Responsive adjustments */
+                /* Responsive adjustments - Updated to reduce margins */
                 @media (min-width: 992px) {
                     .select-task-card {
-                        margin-left: 10px;
+                        margin-left: 5px; /* Reduced from 10px */
                     }
                     
                     .pomodoro-card, .news-ticker-card {
-                        margin-right: 10px;
+                        margin-right: 5px; /* Reduced from 10px */
                     }
+                }
+                
+                /* Task Focus Card - New Styles */
+                .task-focus-card {
+                    border-radius: 16px;
+                    border: none;
+                    overflow: hidden;
+                    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+                    background-color: #ffffff;
+                    position: relative;
+                    height: calc(100% - 0px); /* Adjusted to match Pomodoro timer height */
+                    margin-top: 0px; /* Adjusted to match Pomodoro timer */
+                    display: flex;
+                    flex-direction: column;
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    border-top: 3px solid #bbdefb;
+                }
+                
+                .task-focus-card:hover {
+                    box-shadow: 0 8px 20px rgba(66, 165, 245, 0.15);
+                    transform: translateY(-3px);
+                    border-top-color: #64b5f6;
+                }
+                
+                .task-focus-card .card-header {
+                    background: linear-gradient(to right, #f8faff, #ffffff);
+                    border-bottom: 1px solid #e8f4fd;
+                    padding: 15px;
+                }
+                
+                .task-focus-card .card-header h5 {
+                    color: #1976d2;
+                    font-size: 1.15rem;
+                    font-weight: 500;
+                    letter-spacing: 0.01em;
+                }
+                
+                .add-task-btn {
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    box-shadow: 0 3px 8px rgba(33, 150, 243, 0.2);
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                }
+                
+                .add-task-btn:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+                }
+                
+                /* Task List Container */
+                .task-list {
+                    padding: 15px;
+                    overflow-y: auto;
+                    max-height: calc(100% - 60px);
+                    height: 100%;
+                    scrollbar-width: thin;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                /* Empty State Styling */
+                .empty-state {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 30px;
+                    height: 100%;
+                    color: #78909c;
+                    text-align: center;
+                }
+                
+                .empty-tasks-icon {
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 50%;
+                    background-color: #e3f2fd;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 16px;
+                }
+                
+                .empty-tasks-icon i {
+                    font-size: 32px;
+                    color: #2196f3;
+                }
+                
+                /* Task Item Styling */
+                .task-item-wrapper {
+                    perspective: 1000px;
+                }
+                
+                .task-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 15px;
+                    border-radius: 12px;
+                    background-color: #fff;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+                    border-left: 3px solid transparent;
+                    position: relative;
+                    cursor: pointer;
+                    overflow: hidden;
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                }
+                
+                .task-item::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    height: 2px;
+                    background: linear-gradient(to right, #2196f3, #64b5f6);
+                    transform: scaleX(0);
+                    transform-origin: 0 50%;
+                    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                }
+                
+                .task-item:hover {
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+                    background-color: #f8faff;
+                    transform: translateY(-2px);
+                }
+                
+                .task-item:hover::after {
+                    transform: scaleX(1);
+                }
+                
+                .task-item.selected {
+                    background-color: #e3f2fd;
+                    border-left: 3px solid #2196f3;
+                    box-shadow: 0 3px 10px rgba(33, 150, 243, 0.15);
+                }
+                
+                .task-item.selected::after {
+                    transform: scaleX(1);
+                }
+                
+                .task-checkbox {
+                    margin-right: 12px;
+                    flex-shrink: 0;
+                }
+                
+                .checkbox-circle {
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    border: 2px solid #b0bec5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    transition: all 0.2s ease;
+                }
+                
+                .task-item:hover .checkbox-circle {
+                    border-color: #64b5f6;
+                }
+                
+                .task-item.selected .checkbox-circle {
+                    background-color: #2196f3;
+                    border-color: #2196f3;
+                }
+                
+                .task-details {
+                    flex: 1;
+                    min-width: 0; /* Prevents overflow */
+                    padding-right: 10px;
+                }
+                
+                .task-name {
+                    font-weight: 500;
+                    color: #37474f;
+                    font-size: 0.95rem;
+                    line-height: 1.3;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    margin-bottom: 2px;
+                }
+                
+                .task-meta {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+                
+                .priority {
+                    font-size: 0.75rem;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    display: inline-block;
+                }
+                
+                .priority.urgent {
+                    background-color: #ffebee;
+                    color: #d32f2f;
+                }
+                
+                .priority.high {
+                    background-color: #fff8e1;
+                    color: #ff8f00;
+                }
+                
+                .task-actions {
+                    display: flex;
+                    opacity: 0.4;
+                    transition: opacity 0.2s ease;
+                }
+                
+                .task-item:hover .task-actions {
+                    opacity: 1;
+                }
+                
+                .action-btn {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: transparent;
+                    border: none;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #78909c;
+                    margin-left: 5px;
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .action-btn::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+                    opacity: 0;
+                    transform: scale(0);
+                    transition: all 0.3s ease;
+                }
+                
+                .action-btn:active::after {
+                    transform: scale(2);
+                    opacity: 1;
+                    transition: 0s;
+                }
+                
+                .action-btn:hover {
+                    background-color: rgba(0,0,0,0.05);
+                    transform: scale(1.1);
+                }
+                
+                .action-btn.edit-btn:hover {
+                    color: #2196f3;
+                }
+                
+                .action-btn.delete-btn:hover {
+                    color: #f44336;
+                }
+                
+                /* Make both columns the same height */
+                @media (min-width: 992px) {
+                    .col-lg-4 {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                }
+
+                /* Weather Widget Styles */
+                .weather-card {
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    position: relative;
+                    height: 100%;
+                }
+                
+                .weather-card:hover {
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+                    transform: translateY(-2px);
+                }
+                
+                .weather-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100px;
+                }
+                
+                .weather-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 16px;
+                    background-color: #2196f3;
+                    color: white;
+                    height: 50px;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .weather-header::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, 
+                        rgba(255,255,255,0) 0%, 
+                        rgba(255,255,255,0.1) 100%);
+                    pointer-events: none;
+                }
+                
+                .weather-header h6 {
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                    letter-spacing: 0.05em;
+                }
+                
+                .refresh-btn {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    cursor: pointer;
+                }
+                
+                .refresh-btn:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    transform: rotate(180deg);
+                }
+                
+                .weather-content {
+                    position: relative;
+                    height: 50px;
+                    overflow: hidden;
+                    background-color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0 10px;
+                }
+                
+                /* Loading state */
+                .weather-loading {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #78909c;
+                    padding: 10px;
+                    text-align: center;
+                    font-size: 0.85rem;
+                }
+                
+                .spinner-border {
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    border-width: 0.2rem;
+                }
+                
+                /* Error state */
+                .weather-error {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #ff8f00;
+                    padding: 8px;
+                    text-align: center;
+                    font-size: 0.85rem;
+                }
+                
+                .weather-error i {
+                    font-size: 1.2rem;
+                    margin-bottom: 6px;
+                }
+                
+                /* Weather data display */
+                .weather-data {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    width: 100%;
+                }
+                
+                .city-info {
+                    display: flex;
+                    align-items: baseline;
+                    margin-bottom: 5px;
+                }
+                
+                .city-name {
+                    font-size: 0.95rem;
+                    font-weight: 500;
+                    color: #37474f;
+                    margin: 0;
+                    margin-right: 5px;
+                }
+                
+                .country {
+                    font-size: 0.8rem;
+                    color: #78909c;
+                    margin: 0;
+                }
+                
+                .temp-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 5px;
+                }
+                
+                .weather-icon {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 40px;
+                    width: 40px;
+                    margin-right: 10px;
+                }
+                
+                .weather-icon img {
+                    height: 100%;
+                    width: 100%;
+                    object-fit: contain;
+                }
+                
+                .temp-data {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                
+                .temperature {
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    color: #263238;
+                    margin: 0;
+                    line-height: 1.2;
+                }
+                
+                .weather-desc {
+                    font-size: 0.8rem;
+                    color: #546e7a;
+                    margin: 0;
+                    text-transform: capitalize;
+                }
+                
+                .weather-details {
+                    display: flex;
+                    justify-content: space-around;
+                    width: 100%;
+                    margin-top: 5px;
+                }
+                
+                .detail {
+                    display: flex;
+                    align-items: center;
+                    font-size: 0.8rem;
+                    color: #546e7a;
+                }
+                
+                .detail i {
+                    margin-right: 5px;
+                    color: #2196f3;
                 }
             </style>
         </div>
     </t>
-</templates> 
+</templates>
