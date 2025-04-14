@@ -25,7 +25,8 @@ class TaskDashboard extends Component {
             showTaskModal: false,
             newTask: {
                 name: "",
-                deadline: this.getTodayFormatted(),
+                deadline_date: this.getTodayDateFormatted(),
+                deadline_time: "09:00",
                 priority: "1",
                 user_id: null // Initialize as null, will set after session is available
             },
@@ -79,20 +80,69 @@ class TaskDashboard extends Component {
         }
     }
 
-    getTodayFormatted() {
+    getTodayDateFormatted() {
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
-        const hh = String(today.getHours()).padStart(2, '0');
-        const min = String(today.getMinutes()).padStart(2, '0');
-        // Return datetime in Odoo's expected format: YYYY-MM-DD HH:MM:SS
-        return `${yyyy}-${mm}-${dd} ${hh}:${min}:00`;
+        return `${yyyy}-${mm}-${dd}`;
+    }
+    
+    // Get current time in HH:MM format
+    getCurrentTimeFormatted() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        return `${hh}:${min}`;
+    }
+    
+    // Return datetime in Odoo's expected format
+    formatDateAndTimeToOdoo(date, time) {
+        if (!date) return false;
+        
+        try {
+            // Format as YYYY-MM-DD HH:MM:SS
+            return `${date} ${time || '00:00'}:00`;
+        } catch (error) {
+            console.error("Error formatting date and time:", error);
+            return false;
+        }
     }
 
-    getDateOnlyFormatted(dateTime) {
-        if (!dateTime) return '';
-        return dateTime.split('T')[0];
+    getDateOnlyFormatted(dateTimeStr) {
+        if (!dateTimeStr) return '';
+        
+        try {
+            const date = new Date(dateTimeStr);
+            if (isNaN(date.getTime())) return '';
+            
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            
+            return `${yyyy}-${mm}-${dd}`;
+        } catch (error) {
+            console.error("Error extracting date:", error);
+            return '';
+        }
+    }
+    
+    // Extract time only from datetime string
+    getTimeOnlyFormatted(dateTimeStr) {
+        if (!dateTimeStr) return '';
+        
+        try {
+            const date = new Date(dateTimeStr);
+            if (isNaN(date.getTime())) return '';
+            
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${hh}:${min}`;
+        } catch (error) {
+            console.error("Error extracting time:", error);
+            return '';
+        }
     }
 
     async fetchUsers() {
@@ -220,7 +270,8 @@ class TaskDashboard extends Component {
     resetTaskForm() {
         this.state.newTask = {
             name: "",
-            deadline: this.getTodayFormatted(),
+            deadline_date: this.getTodayDateFormatted(),
+            deadline_time: "09:00",
             priority: "1",
             user_id: this.userService.userId // Use userService instead of env.session
         };
@@ -254,12 +305,13 @@ class TaskDashboard extends Component {
                 user_id: this.state.newTask.user_id || this.userService.userId,
             };
 
-            // Set deadline if provided, otherwise set to today
-            if (this.state.newTask.deadline) {
-                // Convert any format to Odoo's expected format
-                taskData.deadline = this.formatDateForOdoo(this.state.newTask.deadline);
-            } else {
-                taskData.deadline = this.getTodayFormatted();
+            // Set deadline date and time if provided
+            if (this.state.newTask.deadline_date) {
+                taskData.deadline_date = this.state.newTask.deadline_date;
+            }
+            
+            if (this.state.newTask.deadline_time) {
+                taskData.deadline_time = this.state.newTask.deadline_time;
             }
 
             if (this.state.editTaskId) {
@@ -296,7 +348,7 @@ class TaskDashboard extends Component {
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) {
                 console.error("Invalid date format:", dateStr);
-                return this.getTodayFormatted(); // Fallback to today
+                return this.formatDateAndTimeToOdoo(this.getTodayDateFormatted(), this.getCurrentTimeFormatted()); // Fallback to today
             }
             
             const yyyy = date.getFullYear();
@@ -308,14 +360,14 @@ class TaskDashboard extends Component {
             return `${yyyy}-${mm}-${dd} ${hh}:${min}:00`;
         } catch (error) {
             console.error("Error formatting date:", error);
-            return this.getTodayFormatted(); // Fallback to today
+            return this.formatDateAndTimeToOdoo(this.getTodayDateFormatted(), this.getCurrentTimeFormatted()); // Fallback to today
         }
     }
 
     async editTask(taskId) {
         try {
             const task = await this.orm.read("task.task", [taskId], [
-                "name", "deadline", "priority", "user_id"
+                "name", "deadline", "deadline_date", "deadline_time", "priority", "user_id"
             ]);
             
             if (task && task.length > 0) {
@@ -325,24 +377,20 @@ class TaskDashboard extends Component {
                     userId = Array.isArray(task[0].user_id) ? task[0].user_id[0] : task[0].user_id;
                 }
                 
-                // Convert the deadline from Odoo format to a format compatible with datetime-local
-                let deadline = task[0].deadline || this.getTodayFormatted();
-                if (deadline) {
-                    // Convert "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DDTHH:MM"
-                    const dateObj = new Date(deadline);
-                    if (!isNaN(dateObj.getTime())) {
-                        const yyyy = dateObj.getFullYear();
-                        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const dd = String(dateObj.getDate()).padStart(2, '0');
-                        const hh = String(dateObj.getHours()).padStart(2, '0');
-                        const min = String(dateObj.getMinutes()).padStart(2, '0');
-                        deadline = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
-                    }
+                // Get date and time from fields or from deadline
+                let deadlineDate = task[0].deadline_date || '';
+                let deadlineTime = task[0].deadline_time || "09:00";
+                
+                // If we have a deadline but no date/time fields (backward compatibility)
+                if (task[0].deadline && (!deadlineDate || !deadlineTime)) {
+                    deadlineDate = this.getDateOnlyFormatted(task[0].deadline);
+                    deadlineTime = this.getTimeOnlyFormatted(task[0].deadline) || "09:00";
                 }
                 
                 this.state.newTask = {
                     name: task[0].name,
-                    deadline: deadline,
+                    deadline_date: deadlineDate || this.getTodayDateFormatted(),
+                    deadline_time: deadlineTime,
                     priority: String(task[0].priority), // Ensure priority is a string
                     user_id: userId
                 };

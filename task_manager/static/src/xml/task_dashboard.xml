@@ -49,11 +49,20 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Deadline</label>
+                                        <label class="form-label">Deadline Date</label>
                                         <div class="input-group date-picker-group">
                                             <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                                            <input type="datetime-local" class="form-control date-input" 
-                                                   t-model="state.newTask.deadline"
+                                            <input type="date" class="form-control date-input" 
+                                                   t-model="state.newTask.deadline_date"
+                                                   t-on-keydown="onFormKeydown" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Time</label>
+                                        <div class="input-group time-picker-group">
+                                            <span class="input-group-text"><i class="fa fa-clock-o"></i></span>
+                                            <input type="time" class="form-control time-input" 
+                                                   t-model="state.newTask.deadline_time"
                                                    t-on-keydown="onFormKeydown" />
                                         </div>
                                     </div>
@@ -391,18 +400,19 @@
                     background-size: 16px 12px;
                 }
                 
-                .date-picker-group {
+                .date-picker-group, .time-picker-group {
                     box-shadow: 0 2px 5px rgba(0,0,0,0.08);
                     border-radius: 4px;
                     overflow: hidden;
                 }
                 
-                .date-picker-group .input-group-text {
+                .date-picker-group .input-group-text, 
+                .time-picker-group .input-group-text {
                     background-color: #f8f9fa;
                     border-right: none;
                 }
                 
-                .date-input {
+                .date-input, .time-input {
                     border-left: none;
                     padding-left: 0;
                 }

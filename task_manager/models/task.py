@@ -1,6 +1,10 @@
 from odoo import models, fields, api, _
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
+import pytz
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class Task(models.Model):
@@ -32,7 +36,9 @@ class Task(models.Model):
     
     # Dates & Timing
     create_date = fields.Datetime(string='Created on', readonly=True)
-    deadline = fields.Datetime(string='Deadline')
+    deadline_date = fields.Date(string='Deadline Date')
+    deadline_time = fields.Char(string='Deadline Time', default='09:00')
+    deadline = fields.Datetime(string='Deadline', compute='_compute_deadline', store=True)
     completed_date = fields.Datetime(string='Completed on', readonly=True)
     duration = fields.Float(string='Duration (Hours)', default=0.0)
     
@@ -64,6 +70,40 @@ class Task(models.Model):
                 task.is_overdue = task.deadline < now
             else:
                 task.is_overdue = False
+    
+    @api.depends('deadline_date', 'deadline_time')
+    def _compute_deadline(self):
+        """Compute full deadline datetime from date and time fields"""
+        for task in self:
+            if not task.deadline_date:
+                task.deadline = False
+                continue
+                
+            try:
+                # Parse the time string (expecting format like "09:00")
+                time_parts = task.deadline_time.split(':') if task.deadline_time else ['00', '00']
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1]) if len(time_parts) > 1 else 0
+                
+                # Create datetime object from date and time components
+                deadline_date = fields.Date.from_string(task.deadline_date)
+                deadline_datetime = datetime(
+                    year=deadline_date.year,
+                    month=deadline_date.month,
+                    day=deadline_date.day,
+                    hour=hours,
+                    minute=minutes,
+                )
+                
+                # Convert to UTC for storage
+                user_tz = self.env.user.tz or 'UTC'
+                local = pytz.timezone(user_tz)
+                local_dt = local.localize(deadline_datetime, is_dst=None)
+                task.deadline = local_dt.astimezone(pytz.UTC).replace(tzinfo=None)
+            except Exception as e:
+                _logger.error(f"Error computing deadline: {e}")
+                # Fallback to just the date at midnight
+                task.deadline = fields.Datetime.to_datetime(task.deadline_date)
     
     def action_start(self):
         """Mark task as in progress"""
