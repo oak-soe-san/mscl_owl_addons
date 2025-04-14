@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="task_manager.TaskDashboard">
+        <div class="task-dashboard h-100 d-flex flex-column p-3">
+            <!-- Dashboard Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="m-0">Task Dashboard</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" t-on-click="toggleQuickAdd">
+                        <i class="fa fa-plus me-1" /> <t t-if="state.editTaskId">Edit Task</t><t t-else="">Add Task</t>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="refreshData">
+                        <i class="fa fa-refresh" />
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quick Add Task Form -->
+            <div t-if="state.showQuickAdd" class="card shadow-sm mb-4 border-0 quick-add-form">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="m-0"><t t-if="state.editTaskId">Edit Task</t><t t-else="">New Task</t></h5>
+                        <button class="btn btn-sm btn-link text-secondary" t-on-click="toggleQuickAdd">
+                            <i class="fa fa-times" />
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <input type="text" class="form-control" 
+                                   placeholder="Task Title" 
+                                   t-model="state.newTask.name"
+                                   autofocus="true" />
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" t-model="state.newTask.priority">
+                                <option value="0">Low Priority</option>
+                                <option value="1">Normal Priority</option>
+                                <option value="2">High Priority</option>
+                                <option value="3">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="date" class="form-control" 
+                                   placeholder="Deadline" 
+                                   t-model="state.newTask.deadline" />
+                        </div>
+                        <div class="col-12">
+                            <select class="form-select" t-model="state.newTask.user_id">
+                                <option value="">Unassigned</option>
+                                <t t-foreach="state.users" t-as="user" t-key="user.id">
+                                    <option t-att-value="user.id" t-esc="user.name" />
+                                </t>
+                            </select>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button class="btn btn-secondary me-2" t-on-click="toggleQuickAdd">
+                                Cancel
+                            </button>
+                            <button class="btn btn-primary" t-on-click="createTask">
+                                <t t-if="state.editTaskId">Update</t><t t-else="">Create</t>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Task Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 task-card" t-on-click="() => this.openTasks()">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-primary" t-esc="state.taskData.total || 0"/>
+                            <p class="card-text text-muted">Total Tasks</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 task-card" t-on-click="() => this.openTasks('draft')">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-info" t-esc="state.taskData.new || 0"/>
+                            <p class="card-text text-muted">New</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 task-card" t-on-click="() => this.openTasks('in_progress')">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-warning" t-esc="state.taskData.in_progress || 0"/>
+                            <p class="card-text text-muted">In Progress</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 task-card" t-on-click="() => this.openTasks('done')">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-success" t-esc="state.taskData.done || 0"/>
+                            <p class="card-text text-muted">Done</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 task-card" t-on-click="() => this.openTasks('cancelled')">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-secondary" t-esc="state.taskData.cancelled || 0"/>
+                            <p class="card-text text-muted">Cancelled</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 mb-3 mb-lg-0">
+                    <div class="card h-100 shadow-sm border-0 bg-danger-subtle task-card" t-on-click="openOverdueTasks">
+                        <div class="card-body text-center">
+                            <h1 class="mb-0 text-danger" t-esc="state.taskData.overdue || 0"/>
+                            <p class="card-text text-muted">Overdue</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 task-list-card">
+                        <div class="card-header bg-white border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title m-0">My Tasks</h5>
+                                <div class="btn-group" role="group">
+                                    <button t-att-class="'btn btn-sm ' + (state.filterStatus === 'all' ? 'btn-primary' : 'btn-outline-primary')" 
+                                            t-on-click="() => this.filterTasks('all')">
+                                        All
+                                    </button>
+                                    <button t-att-class="'btn btn-sm ' + (state.filterStatus === 'draft' ? 'btn-primary' : 'btn-outline-primary')" 
+                                            t-on-click="() => this.filterTasks('draft')">
+                                        New
+                                    </button>
+                                    <button t-att-class="'btn btn-sm ' + (state.filterStatus === 'in_progress' ? 'btn-primary' : 'btn-outline-primary')" 
+                                            t-on-click="() => this.filterTasks('in_progress')">
+                                        In Progress
+                                    </button>
+                                    <button t-att-class="'btn btn-sm ' + (state.filterStatus === 'done' ? 'btn-primary' : 'btn-outline-primary')" 
+                                            t-on-click="() => this.filterTasks('done')">
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div t-if="state.isLoading" class="text-center p-5">
+                                <i class="fa fa-spinner fa-spin fa-2x" />
+                                <p>Loading tasks...</p>
+                            </div>
+                            <div t-elif="getFilteredTasks().length === 0" class="text-center p-5">
+                                <div class="text-muted">
+                                    <i class="fa fa-tasks fa-3x mb-3"></i>
+                                    <p>No tasks found. Click "Add Task" to create your first task.</p>
+                                </div>
+                            </div>
+                            <div t-else="" class="task-list">
+                                <div t-foreach="getFilteredTasks()" t-as="task" t-key="task.id" 
+                                     class="task-item p-3 border-bottom d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div t-if="task.state === 'done'" 
+                                             class="task-checkbox rounded-circle bg-success text-white">
+                                            <i class="fa fa-check" />
+                                        </div>
+                                        <div t-elif="task.state === 'in_progress'" 
+                                             class="task-checkbox rounded-circle bg-warning" 
+                                             t-on-click="() => this.markTaskDone(task.id)">
+                                        </div>
+                                        <div t-else="" 
+                                             class="task-checkbox rounded-circle border" 
+                                             t-on-click="() => this.startTask(task.id)">
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1" t-att-class="{'text-decoration-line-through': task.state === 'done' || task.state === 'cancelled'}">
+                                        <div class="d-flex flex-wrap align-items-center">
+                                            <h6 class="mb-0 me-2" t-esc="task.name" />
+                                            <span t-if="task.priority !== '1'" 
+                                                  t-att-class="'badge rounded-pill me-2 ' + getPriorityClass(task.priority)" 
+                                                  t-esc="getPriorityName(task.priority)" />
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            <span t-if="task.deadline" class="me-3">
+                                                <i class="fa fa-calendar me-1" />
+                                                <t t-esc="task.deadline" />
+                                                <i t-if="task.is_overdue" class="fa fa-exclamation-circle text-danger ms-1" title="Overdue"></i>
+                                            </span>
+                                            <span t-if="task.state === 'draft'" class="badge bg-info">New</span>
+                                            <span t-elif="task.state === 'in_progress'" class="badge bg-warning">In Progress</span>
+                                            <span t-elif="task.state === 'done'" class="badge bg-success">Done</span>
+                                            <span t-elif="task.state === 'cancelled'" class="badge bg-secondary">Cancelled</span>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions">
+                                        <button class="btn btn-sm btn-link text-primary" 
+                                                t-on-click="() => this.editTask(task.id)" 
+                                                title="Edit Task">
+                                            <i class="fa fa-pencil" />
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-danger" 
+                                                t-on-click="() => this.confirmDeleteTask(task.id, task.name)" 
+                                                title="Delete Task">
+                                            <i class="fa fa-trash" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snackbar for notifications -->
+            <div t-if="state.showSnackbar" class="snackbar shadow">
+                <span t-esc="state.snackbarMessage" />
+            </div>
+
+            <!-- CSS Styles -->
+            <style>
+                .task-dashboard {
+                    background-color: #f5f7fa;
+                }
+                .task-card {
+                    transition: transform 0.2s, box-shadow 0.2s;
+                    cursor: pointer;
+                }
+                .task-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+                }
+                .task-list-card {
+                    height: calc(100vh - 300px);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .task-list {
+                    overflow-y: auto;
+                    max-height: calc(100vh - 370px);
+                }
+                .task-item {
+                    transition: background-color 0.2s;
+                }
+                .task-item:hover {
+                    background-color: rgba(0,0,0,0.02);
+                }
+                .task-checkbox {
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+                .task-checkbox:hover {
+                    background-color: rgba(0,0,0,0.1);
+                }
+                .snackbar {
+                    position: fixed;
+                    bottom: 24px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #333;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    z-index: 1050;
+                    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translate(-50%, 20px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translate(-50%, 0); }
+                    to { opacity: 0; transform: translate(-50%, 20px); }
+                }
+                .quick-add-form {
+                    animation: formFadeIn 0.3s;
+                }
+                @keyframes formFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            </style>
+        </div>
+    </t>
+</templates> 

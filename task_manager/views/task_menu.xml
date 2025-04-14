@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Task Manager Menu -->
+  <menuitem id="menu_task_root" 
+            name="Task Manager" 
+            sequence="55" 
+            web_icon="task_manager,static/description/icon.png">
+            
+    <menuitem id="menu_task_main" 
+              name="Tasks" 
+              sequence="10">
+              
+      <menuitem id="menu_task_dashboard" 
+                name="Dashboard" 
+                action="action_task_dashboard" 
+                sequence="5"/>
+                
+      <menuitem id="menu_task_task" 
+                name="My Tasks" 
+                action="action_task" 
+                sequence="10"/>
+                
+      <menuitem id="menu_task_tag" 
+                name="Task Tags" 
+                action="action_task_tag" 
+                sequence="20"
+                groups="task_manager.group_task_manager"/>
+    </menuitem>
+    
+    <menuitem id="menu_task_config" 
+              name="Configuration" 
+              sequence="100" 
+              groups="task_manager.group_task_manager">
+    </menuitem>
+  </menuitem>
+</odoo> 
