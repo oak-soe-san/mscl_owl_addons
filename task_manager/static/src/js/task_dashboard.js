@@ -110,15 +110,35 @@ class TaskDashboard extends Component {
                         cardBackgroundColor: '#ffffff',
                         buttonHoverColor: '#1565C0'
                     },
-                    'dark-mode': {
-                        name: 'Dark Mode',
-                        primaryColor: '#3f51b5', // Indigo
-                        secondaryColor: '#7986cb',
-                        accentColor: '#536dfe',
-                        textColor: '#e0e0e0',
-                        backgroundColor: '#212121',
-                        cardBackgroundColor: '#323232',
-                        buttonHoverColor: '#303f9f'
+                    'sunset-blush': {
+                        name: 'Sunset Blush',
+                        primaryColor: '#FF6F61',
+                        secondaryColor: '#FFD54F',
+                        accentColor: '#FF8A65',
+                        textColor: '#212529',
+                        backgroundColor: '#FFF3E0',
+                        cardBackgroundColor: '#ffffff',
+                        buttonHoverColor: '#E64A19'
+                    },
+                    'emerald-forest': {
+                        name: 'Emerald Forest',
+                        primaryColor: '#388E3C',
+                        secondaryColor: '#A5D6A7',
+                        accentColor: '#43A047',
+                        textColor: '#212529',
+                        backgroundColor: '#E8F5E9',
+                        cardBackgroundColor: '#ffffff',
+                        buttonHoverColor: '#2E7D32'
+                    },
+                    'ocean-wave': {
+                        name: 'Ocean Wave',
+                        primaryColor: '#0288D1',
+                        secondaryColor: '#4DD0E1',
+                        accentColor: '#00ACC1',
+                        textColor: '#212529',
+                        backgroundColor: '#E0F7FA',
+                        cardBackgroundColor: '#ffffff',
+                        buttonHoverColor: '#01579B'
                     }
                 }
             }
@@ -192,6 +212,9 @@ class TaskDashboard extends Component {
         root.style.setProperty('--background-color', theme.backgroundColor);
         root.style.setProperty('--card-background-color', theme.cardBackgroundColor);
         root.style.setProperty('--button-hover-color', theme.buttonHoverColor);
+        
+        // Animate theme change
+        root.style.transition = 'background-color 0.8s cubic-bezier(0.4,0,0.2,1), color 0.8s cubic-bezier(0.4,0,0.2,1)';
         
         // Update Pomodoro timer colors based on theme
         this.updateTimerColorsForTheme(theme);
