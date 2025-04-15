@@ -87,58 +87,88 @@ class TaskDashboard extends Component {
             
             // Theme System - New Addition
             themeSystem: {
-                currentTheme: 'odoo-classic',
+                currentTheme: 'lakers',
                 showThemeSelector: false,
                 themes: {
-                    'odoo-classic': {
-                        name: 'Odoo Classic',
-                        primaryColor: '#714B67', // Odoo purple
-                        secondaryColor: '#017e84', // Teal
-                        accentColor: '#00A09D',
-                        textColor: '#212529',
-                        backgroundColor: '#f8f9fa',
-                        cardBackgroundColor: '#ffffff',
-                        buttonHoverColor: '#5D3E56'
+                    'lakers': {
+                        name: 'Los Angeles Lakers',
+                        primaryColor: '#552583',
+                        secondaryColor: '#FDB927',
+                        accentColor: '#000000',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#311B92'
                     },
-                    'mingalar-sky': {
-                        name: 'Mingalar Sky',
-                        primaryColor: '#1976D2', // Sky blue
-                        secondaryColor: '#FFD700', // Gold
-                        accentColor: '#42A5F5',
-                        textColor: '#212529',
-                        backgroundColor: '#E3F2FD',
-                        cardBackgroundColor: '#ffffff',
-                        buttonHoverColor: '#1565C0'
+                    'warriors': {
+                        name: 'Golden State Warriors',
+                        primaryColor: '#1D428A',
+                        secondaryColor: '#FFC72C',
+                        accentColor: '#006BB6',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#0A2240'
                     },
-                    'sunset-blush': {
-                        name: 'Sunset Blush',
-                        primaryColor: '#FF6F61',
-                        secondaryColor: '#FFD54F',
-                        accentColor: '#FF8A65',
-                        textColor: '#212529',
-                        backgroundColor: '#FFF3E0',
-                        cardBackgroundColor: '#ffffff',
-                        buttonHoverColor: '#E64A19'
+                    'celtics': {
+                        name: 'Boston Celtics',
+                        primaryColor: '#007A33',
+                        secondaryColor: '#BA9653',
+                        accentColor: '#963821',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#005A2B'
                     },
-                    'emerald-forest': {
-                        name: 'Emerald Forest',
-                        primaryColor: '#388E3C',
-                        secondaryColor: '#A5D6A7',
-                        accentColor: '#43A047',
-                        textColor: '#212529',
-                        backgroundColor: '#E8F5E9',
-                        cardBackgroundColor: '#ffffff',
-                        buttonHoverColor: '#2E7D32'
+                    'bulls': {
+                        name: 'Chicago Bulls',
+                        primaryColor: '#CE1141',
+                        secondaryColor: '#000000',
+                        accentColor: '#B4975A',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#8A1538'
                     },
-                    'ocean-wave': {
-                        name: 'Ocean Wave',
-                        primaryColor: '#0288D1',
-                        secondaryColor: '#4DD0E1',
-                        accentColor: '#00ACC1',
-                        textColor: '#212529',
-                        backgroundColor: '#E0F7FA',
-                        cardBackgroundColor: '#ffffff',
-                        buttonHoverColor: '#01579B'
+                    'heat': {
+                        name: 'Miami Heat',
+                        primaryColor: '#98002E',
+                        secondaryColor: '#F9A01B',
+                        accentColor: '#000000',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#600026'
+                    },
+                    'spurs': {
+                        name: 'San Antonio Spurs',
+                        primaryColor: '#C4CED4',
+                        secondaryColor: '#000000',
+                        accentColor: '#BAC3C9',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#707271'
+                    },
+                    'knicks': {
+                        name: 'New York Knicks',
+                        primaryColor: '#006BB6',
+                        secondaryColor: '#F58426',
+                        accentColor: '#BEC0C2',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#003A70'
+                    },
+                    'suns': {
+                        name: 'Phoenix Suns',
+                        primaryColor: '#1D1160',
+                        secondaryColor: '#E56020',
+                        accentColor: '#63727A',
+                        textColor: '#222',
+                        backgroundColor: '#F5F5F5',
+                        cardBackgroundColor: '#fff',
+                        buttonHoverColor: '#120933'
                     }
                 }
             }
@@ -798,6 +828,7 @@ class TaskDashboard extends Component {
     }
 
     showSnackbar(message) {
+<<<<<<< HEAD
         // Remove notification for theme change
         if (message && message.startsWith('Theme changed to')) return;
         this.state.snackbarMessage = message;
@@ -805,6 +836,10 @@ class TaskDashboard extends Component {
         setTimeout(() => {
             this.state.showSnackbar = false;
         }, 3000);
+=======
+        // Completely disable all notifications/snackbar
+        return;
+>>>>>>> e5fdbe7 (feat(task_manager): nba theme palette and fixed dropdown width)
     }
 
     onFormKeydown(event) {
