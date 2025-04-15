@@ -2,18 +2,7 @@
 <templates>
     <t t-name="task_manager.TaskDashboard">
         <div class="task-dashboard h-100 d-flex flex-column p-3">
-            <!-- Dashboard Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="m-0">Task Dashboard</h2>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary" t-on-click="toggleTaskModal">
-                        <i class="fa fa-plus me-1" /> Add Task
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="refreshData">
-                        <i class="fa fa-refresh" />
-                    </button>
-                </div>
-            </div>
+            <!-- Dashboard Header - Removed as requested -->
             
             <!-- Task Creation/Edit Modal -->
             <div t-if="state.showTaskModal" class="task-modal-backdrop" t-on-click="closeTaskModal">
