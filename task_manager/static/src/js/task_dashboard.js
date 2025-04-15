@@ -247,8 +247,7 @@ class TaskDashboard extends Component {
         if (this.state.themeSystem.themes[themeName]) {
             this.state.themeSystem.currentTheme = themeName;
             this.saveThemePreference(themeName);
-            this.showSnackbar(`Theme changed to ${this.state.themeSystem.themes[themeName].name}`);
-            this.state.themeSystem.showThemeSelector = false;
+            // Do NOT close the theme selector here
         }
     }
     
@@ -799,10 +798,10 @@ class TaskDashboard extends Component {
     }
 
     showSnackbar(message) {
+        // Remove notification for theme change
+        if (message && message.startsWith('Theme changed to')) return;
         this.state.snackbarMessage = message;
         this.state.showSnackbar = true;
-        
-        // Hide snackbar after 3 seconds
         setTimeout(() => {
             this.state.showSnackbar = false;
         }, 3000);

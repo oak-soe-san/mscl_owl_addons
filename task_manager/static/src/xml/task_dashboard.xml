@@ -265,10 +265,12 @@
 
             <!-- Footer with Theme Selector Button (Bottom-Up Animation) -->
             <footer class="dashboard-footer d-flex justify-content-end align-items-center mt-auto pt-3">
-                <div class="theme-selector-footer-container ms-auto position-relative">
-                    <button class="theme-selector-toggle footer-theme-btn theme-btn-modern" t-on-click="toggleThemeSelector">
-                        <span class="theme-btn-palette-icon">
-                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="theme-selector-footer-container ms-auto position-relative"
+                     t-on-mouseenter="() => { state.themeSystem.showThemeSelector = true }"
+                     t-on-mouseleave="() => { state.themeSystem.showThemeSelector = false }">
+                    <button class="theme-selector-toggle footer-theme-btn theme-btn-modern spin-theme-btn">
+                        <span class="theme-btn-palette-icon spin-on-hover">
+                            <svg class="theme-palette-svg spin-fan-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="14" cy="14" r="13" fill="var(--primary-color)" stroke="#fff" stroke-width="2"/>
                                 <circle cx="8.5" cy="10" r="2.5" fill="var(--secondary-color)"/>
                                 <circle cx="19.5" cy="10" r="2.5" fill="var(--accent-color)"/>
@@ -277,7 +279,7 @@
                         </span>
                         <span class="theme-btn-label">Theme</span>
                     </button>
-                    <div t-if="state.themeSystem.showThemeSelector" class="theme-selector-panel shadow footer-theme-panel material-ui-dropdown align-btn-dropdown animate-up">
+                    <div t-if="state.themeSystem.showThemeSelector" class="theme-selector-panel shadow footer-theme-panel material-ui-dropdown align-btn-dropdown animate-up" t-on-click.stop="">
                         <div class="theme-selector-header d-flex align-items-center justify-content-between">
                             <span class="theme-palette-title">🎨 Theme Palette</span>
                             <button class="theme-close-btn" t-on-click="toggleThemeSelector" title="Close">
@@ -1404,7 +1406,7 @@
                 }
 
                 .theme-btn-modern {
-                    background: linear-gradient(90deg, var(--primary-color) 60%, var(--secondary-color) 100%);
+                    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
                     color: #fff;
                     border-radius: 32px;
                     padding: 10px 28px 10px 18px;
@@ -1420,15 +1422,26 @@
                 }
 
                 .theme-btn-modern:hover {
-                    background: linear-gradient(90deg, var(--button-hover-color) 60%, var(--secondary-color) 100%);
+                    background: linear-gradient(90deg, var(--button-hover-color) 0%, var(--secondary-color) 100%);
                     transform: scale(1.06);
                     box-shadow: 0 8px 24px rgba(0,0,0,0.13);
                 }
 
-                .theme-btn-palette-icon {
+                .spin-on-hover {
                     display: flex;
                     align-items: center;
                     margin-right: 6px;
+                    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+                }
+
+                .spin-theme-btn:hover .spin-on-hover .theme-palette-svg,
+                .theme-selector-footer-container:hover .spin-on-hover .theme-palette-svg {
+                    animation: spin-fan 1.1s linear infinite !important;
+                }
+
+                @keyframes spin-fan {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
                 }
 
                 .theme-btn-label {
