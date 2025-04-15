@@ -2,7 +2,7 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, useState, onWillStart, useEffect } from "@odoo/owl";
 
 class TaskDashboard extends Component {
     static template = "task_manager.TaskDashboard";
@@ -83,6 +83,44 @@ class TaskDashboard extends Component {
                     lon: null,
                     city: ''
                 }
+            },
+            
+            // Theme System - New Addition
+            themeSystem: {
+                currentTheme: 'odoo-classic',
+                showThemeSelector: false,
+                themes: {
+                    'odoo-classic': {
+                        name: 'Odoo Classic',
+                        primaryColor: '#714B67', // Odoo purple
+                        secondaryColor: '#017e84', // Teal
+                        accentColor: '#00A09D',
+                        textColor: '#212529',
+                        backgroundColor: '#f8f9fa',
+                        cardBackgroundColor: '#ffffff',
+                        buttonHoverColor: '#5D3E56'
+                    },
+                    'mingalar-sky': {
+                        name: 'Mingalar Sky',
+                        primaryColor: '#1976D2', // Sky blue
+                        secondaryColor: '#FFD700', // Gold
+                        accentColor: '#42A5F5',
+                        textColor: '#212529',
+                        backgroundColor: '#E3F2FD',
+                        cardBackgroundColor: '#ffffff',
+                        buttonHoverColor: '#1565C0'
+                    },
+                    'dark-mode': {
+                        name: 'Dark Mode',
+                        primaryColor: '#3f51b5', // Indigo
+                        secondaryColor: '#7986cb',
+                        accentColor: '#536dfe',
+                        textColor: '#e0e0e0',
+                        backgroundColor: '#212121',
+                        cardBackgroundColor: '#323232',
+                        buttonHoverColor: '#303f9f'
+                    }
+                }
             }
         });
 
@@ -102,12 +140,93 @@ class TaskDashboard extends Component {
             // Fetch users and dashboard data in parallel
             await Promise.all([
                 this.fetchUsers(),
-                this.fetchDashboardData()
+                this.fetchDashboardData(),
+                this.loadUserThemePreference()
             ]);
             
             // Initialize weather data
             this.initWeather();
         });
+        
+        // Apply the theme immediately when mounted and whenever it changes
+        useEffect(() => {
+            this.applyTheme(this.state.themeSystem.currentTheme);
+        }, () => [this.state.themeSystem.currentTheme]);
+    }
+    
+    // Load user theme preference from browser storage
+    async loadUserThemePreference() {
+        try {
+            // Check localStorage for theme preference
+            const savedTheme = localStorage.getItem('taskDashboardTheme');
+            if (savedTheme && this.state.themeSystem.themes[savedTheme]) {
+                this.state.themeSystem.currentTheme = savedTheme;
+            }
+        } catch (error) {
+            console.error('Error loading theme preference:', error);
+            // Fallback to default theme
+        }
+    }
+    
+    // Save user theme preference to browser storage
+    saveThemePreference(themeName) {
+        try {
+            localStorage.setItem('taskDashboardTheme', themeName);
+        } catch (error) {
+            console.error('Error saving theme preference:', error);
+        }
+    }
+    
+    // Apply theme to the dashboard
+    applyTheme(themeName) {
+        const theme = this.state.themeSystem.themes[themeName];
+        if (!theme) return;
+        
+        // Apply theme using CSS variables at the document root level
+        const root = document.documentElement;
+        
+        root.style.setProperty('--primary-color', theme.primaryColor);
+        root.style.setProperty('--secondary-color', theme.secondaryColor);
+        root.style.setProperty('--accent-color', theme.accentColor);
+        root.style.setProperty('--text-color', theme.textColor);
+        root.style.setProperty('--background-color', theme.backgroundColor);
+        root.style.setProperty('--card-background-color', theme.cardBackgroundColor);
+        root.style.setProperty('--button-hover-color', theme.buttonHoverColor);
+        
+        // Update Pomodoro timer colors based on theme
+        this.updateTimerColorsForTheme(theme);
+    }
+    
+    // Update timer colors based on current theme
+    updateTimerColorsForTheme(theme) {
+        // Update the timer mode colors based on the current theme
+        this.state.timerModes.focus.color = theme.primaryColor;
+        this.state.timerModes.shortBreak.color = theme.secondaryColor;
+        this.state.timerModes.longBreak.color = theme.accentColor;
+        
+        // Update current timer mode color if active
+        if (this.state.timerMode) {
+            const modeId = this.state.timerMode.id;
+            this.state.timerMode.color = this.state.timerModes[modeId].color;
+        }
+        
+        // Update the timer style if it's currently displayed
+        this.updateTimerStyle();
+    }
+    
+    // Toggle theme picker visibility
+    toggleThemeSelector() {
+        this.state.themeSystem.showThemeSelector = !this.state.themeSystem.showThemeSelector;
+    }
+    
+    // Change the current theme
+    changeTheme(themeName) {
+        if (this.state.themeSystem.themes[themeName]) {
+            this.state.themeSystem.currentTheme = themeName;
+            this.saveThemePreference(themeName);
+            this.showSnackbar(`Theme changed to ${this.state.themeSystem.themes[themeName].name}`);
+            this.state.themeSystem.showThemeSelector = false;
+        }
     }
     
     // Cleanup when component is destroyed
