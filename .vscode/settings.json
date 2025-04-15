@@ -1,0 +1,31 @@
+{
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": "./.github/rules/git_commit.md"
+    },
+    {
+      "file": "./.github/rules/global.md"
+    },
+    {
+      "file": "./.github/rules/odoo-backend.md"
+    },
+    {
+      "file": "./.github/rules/odoo-frontend.md"
+    },
+    {
+      "file": "./.github/rules/odoo-module-structure.md"
+    },
+    {
+      "file": "./.github/rules/odoo-security.md"
+    },
+    {
+      "file": "./.github/rules/odoo-xml.md"
+    }
+  ],
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+"text": "description: Enforce ISO commit standards for Odoo 17\nfiles: .git/COMMIT_EDITMSG\n\n@rules:\n1. **Odoo-Specific Scopes**:\n   - Use module names (e.g., `account`, `stock`, `task_manager`)\n   - For multi-module changes: `core`, `api`, or `base`\n2. **Body Requirements**:\n   - Mention affected models (e.g., `sale.order`, `task.task`)\n   - Note view/xml changes if UI-related\n3. **Validation**:\n   - Reject messages missing type/scope\n   - Require Jira/Task-ID for fixes\n   - Add `[MIG]` prefix for migration commits\n\n@example:\nfix(account): prevent duplicate invoice numbers\n\nOverrides _get_last_sequence() in account.move\n\nAdds unique constraint on name and company_id\n\nFixes #4567\n\n[CI] Tests updated for sequence validation"
+    }
+  ]
+}
+

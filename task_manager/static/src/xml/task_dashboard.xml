@@ -1,35 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
-    <t t-name="task_manager.TaskDashboard">
+    <t t-name="task_manager.TaskDashboard" owl="1">
         <div class="task-dashboard h-100 d-flex flex-column p-3">
-            <!-- Theme Selector Button and Panel -->
-            <div class="theme-selector-container">
-                <button class="theme-selector-toggle" t-on-click="toggleThemeSelector">
-                    <i class="fa fa-palette me-1"></i>
-                </button>
-                <div t-if="state.themeSystem.showThemeSelector" class="theme-selector-panel shadow">
-                    <div class="theme-selector-header">
-                        <h6 class="m-0">Select Theme</h6>
-                        <button class="btn-close btn-sm" t-on-click="toggleThemeSelector"></button>
-                    </div>
-                    <div class="theme-options">
-                        <div t-foreach="Object.keys(state.themeSystem.themes)" t-as="theme" t-key="theme"
-                             t-attf-class="theme-option {{state.themeSystem.currentTheme === theme ? 'selected' : ''}}"
-                             t-on-click="() => this.changeTheme(theme)">
-                            <div class="theme-preview">
-                                <div class="theme-color" t-attf-style="background-color: {{state.themeSystem.themes[theme].primaryColor}}"></div>
-                                <div class="theme-color" t-attf-style="background-color: {{state.themeSystem.themes[theme].secondaryColor}}"></div>
-                                <div class="theme-color" t-attf-style="background-color: {{state.themeSystem.themes[theme].accentColor}}"></div>
-                            </div>
-                            <div class="theme-name" t-esc="state.themeSystem.themes[theme].name"></div>
-                            <div t-if="state.themeSystem.currentTheme === theme" class="theme-check">
-                                <i class="fa fa-check"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Task Creation/Edit Modal -->
             <div t-if="state.showTaskModal" class="task-modal-backdrop" t-on-click="closeTaskModal">
                 <div class="task-modal-dialog" t-on-click.stop="">
@@ -109,12 +81,10 @@
                 </div>
             </div>
             
-            <!-- Pomodoro Timer Section (Replacing Task Statistics Cards) -->
-            <div class="row mb-4">
-                <!-- Left Column: Pomodoro Timer and News Ticker (2/3 width) -->
-                <div class="col-12 col-lg-8">
-                    <!-- Pomodoro Timer Card -->
-                    <div class="card shadow-sm border-0 pomodoro-card mb-4">
+            <!-- Pomodoro Timer and Task Section (Equal Height Columns) -->
+            <div class="row mb-4 flex-grow-1 align-items-stretch" style="min-height: 400px;">
+                <div class="col-12 col-lg-8 d-flex align-items-stretch">
+                    <div class="card shadow-sm border-0 pomodoro-card flex-fill d-flex flex-column h-100 rounded-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h4 class="card-title m-0">Pomodoro Timer</h4>
@@ -207,132 +177,10 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- News Ticker and Weather Section -->
-                    <div class="row g-0">
-                        <!-- Latest Updates - Left Side -->
-                        <div class="col-7 pe-2">
-                            <div class="card shadow-sm border-0 news-ticker-card">
-                                <div class="card-body p-0">
-                                    <div class="news-ticker-container">
-                                        <div class="news-ticker-header">
-                                            <div class="ticker-label">
-                                                <span class="ticker-pulse"></span>
-                                                LATEST UPDATES
-                                            </div>
-                                            <div class="ticker-control">
-                                                <button class="btn btn-icon ticker-btn" t-on-click="toggleNewsTickerPause">
-                                                    <i t-attf-class="fa {{state.newsTickerPaused ? 'fa-play' : 'fa-pause'}}"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="news-ticker-content" t-att-class="{'paused': state.newsTickerPaused}">
-                                            <div class="ticker-decoration">
-                                                <div class="ticker-dot"></div>
-                                                <div class="ticker-dot"></div>
-                                                <div class="ticker-dot"></div>
-                                            </div>
-                                            <div class="ticker-track">
-                                                <div class="ticker-item">
-                                                    <i class="fa fa-newspaper-o ticker-icon"></i>
-                                                    <span>New feature released: Task prioritization now includes AI recommendations</span>
-                                                </div>
-                                                <div class="ticker-item">
-                                                    <i class="fa fa-bar-chart ticker-icon"></i>
-                                                    <span>Productivity increased by 27% with the Pomodoro technique</span>
-                                                </div>
-                                                <div class="ticker-item">
-                                                    <i class="fa fa-calendar-check-o ticker-icon"></i>
-                                                    <span>Users completing 4+ pomodoros daily report better work-life balance</span>
-                                                </div>
-                                                <div class="ticker-item">
-                                                    <i class="fa fa-lightbulb-o ticker-icon"></i>
-                                                    <span>Tip: Use task categories to better organize your workflow</span>
-                                                </div>
-                                                <div class="ticker-item">
-                                                    <i class="fa fa-line-chart ticker-icon"></i>
-                                                    <span>Studies show taking regular breaks improves focus by up to 45%</span>
-                                                </div>
-                                            </div>
-                                            <div class="ticker-gradient-left"></div>
-                                            <div class="ticker-gradient-right"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Weather Widget - Right Side -->
-                        <div class="col-5 ps-2">
-                            <div class="card shadow-sm border-0 weather-card">
-                                <div class="card-body p-0">
-                                    <div class="weather-container" t-att-class="{'loading': !state.weather || state.weather.loading}">
-                                        <div class="weather-header">
-                                            <h6 class="m-0">Weather</h6>
-                                            <button class="btn btn-icon refresh-btn" t-on-click="refreshWeather">
-                                                <i class="fa fa-refresh"></i>
-                                            </button>
-                                        </div>
-                                        <div class="weather-content">
-                                            <!-- Loading State -->
-                                            <div t-if="!state.weather || state.weather.loading" class="weather-loading">
-                                                <div class="spinner-border text-primary" role="status">
-                                                    <span class="visually-hidden">Loading...</span>
-                                                </div>
-                                                <p class="m-0 mt-2">Loading weather...</p>
-                                            </div>
-                                            
-                                            <!-- Error State -->
-                                            <div t-elif="state.weather.error" class="weather-error">
-                                                <i class="fa fa-exclamation-triangle text-warning"></i>
-                                                <p class="m-0 mt-2" t-esc="state.weather.error"></p>
-                                                <button class="btn btn-sm btn-outline-primary mt-2" t-on-click="refreshWeather">
-                                                    Retry
-                                                </button>
-                                            </div>
-                                            
-                                            <!-- Weather Data -->
-                                            <div t-else="" class="weather-data">
-                                                <div class="city-info">
-                                                    <h5 class="city-name" t-esc="state.weather.data.name"></h5>
-                                                    <p class="country" t-esc="state.weather.data.sys.country"></p>
-                                                </div>
-                                                <div class="temp-container">
-                                                    <div class="weather-icon">
-                                                        <img t-if="state.weather.data.weather[0].icon" 
-                                                             t-att-src="'https://openweathermap.org/img/wn/' + state.weather.data.weather[0].icon + '@2x.png'" 
-                                                             t-att-alt="state.weather.data.weather[0].description" />
-                                                    </div>
-                                                    <div class="temp-data">
-                                                        <h2 class="temperature">
-                                                            <span t-esc="Math.round(state.weather.data.main.temp)"></span>°C
-                                                        </h2>
-                                                        <p class="weather-desc" t-esc="state.weather.data.weather[0].description"></p>
-                                                    </div>
-                                                </div>
-                                                <div class="weather-details">
-                                                    <div class="detail">
-                                                        <i class="fa fa-tint"></i>
-                                                        <span t-esc="state.weather.data.main.humidity + '%'"></span>
-                                                    </div>
-                                                    <div class="detail">
-                                                        <i class="fa fa-wind"></i>
-                                                        <span t-esc="Math.round(state.weather.data.wind.speed) + ' m/s'"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 
-                <!-- Right Column: Task Section -->
-                <div class="col-12 col-lg-4">
-                    <!-- Task Selection Card -->
-                    <div class="card shadow-sm border-0 task-focus-card">
+                <div class="col-12 col-lg-4 d-flex align-items-stretch">
+                    <div class="card shadow-sm border-0 task-focus-card flex-fill d-flex flex-column h-100 rounded-4">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Select Task for Focus</h5>
@@ -415,6 +263,39 @@
                 </div>
             </div>
 
+            <!-- Footer with Theme Selector Button (Bottom-Up Animation) -->
+            <footer class="dashboard-footer d-flex justify-content-end align-items-center mt-auto pt-3">
+                <div class="theme-selector-footer-container ms-auto position-relative">
+                    <button class="theme-selector-toggle footer-theme-btn" t-on-click="toggleThemeSelector">
+                        <i class="fa fa-palette me-1"></i>
+                        <span class="theme-btn-label">Theme</span>
+                    </button>
+                    <div t-if="state.themeSystem.showThemeSelector" class="theme-selector-panel shadow footer-theme-panel material-ui-dropdown align-btn-dropdown animate-up">
+                        <div class="theme-selector-header d-flex align-items-center justify-content-between">
+                            <span class="theme-palette-title">🎨 Theme Palette</span>
+                            <button class="theme-close-btn" t-on-click="toggleThemeSelector" title="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="theme-options palette-list-style">
+                            <div t-foreach="Object.keys(state.themeSystem.themes)" t-as="theme" t-key="theme"
+                                 t-attf-class="theme-option-list {{state.themeSystem.currentTheme === theme ? 'selected' : ''}}"
+                                 t-on-click="() => this.changeTheme(theme)">
+                                <div class="theme-palette-preview-list">
+                                    <div class="theme-color-list" t-attf-style="background-color: {{state.themeSystem.themes[theme].primaryColor}}"></div>
+                                    <div class="theme-color-list" t-attf-style="background-color: {{state.themeSystem.themes[theme].secondaryColor}}"></div>
+                                    <div class="theme-color-list" t-attf-style="background-color: {{state.themeSystem.themes[theme].accentColor}}"></div>
+                                </div>
+                                <div class="theme-name-list ms-2" t-esc="state.themeSystem.themes[theme].name"></div>
+                                <div t-if="state.themeSystem.currentTheme === theme" class="theme-check-list ms-2">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
             <!-- CSS Styles -->
             <style>
                 /* Theme system - CSS Variables */
@@ -428,113 +309,19 @@
                     --button-hover-color: #5D3E56;
                 }
 
-                /* Theme Selector Styles */
-                .theme-selector-container {
-                    position: fixed;
-                    top: 15px;
-                    right: 15px;
-                    z-index: 1000;
+                /* Make news/weather cards always same height */
+                .news-ticker-card, .weather-card {
+                  min-height: 180px;
+                  height: 100%;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: stretch;
                 }
-                
-                .theme-selector-toggle {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background-color: var(--primary-color);
-                    color: white;
-                    border: none;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-                
-                .theme-selector-toggle:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    background-color: var(--button-hover-color);
-                }
-                
-                .theme-selector-panel {
-                    position: absolute;
-                    top: 50px;
-                    right: 0;
-                    width: 240px;
-                    background-color: var(--card-background-color);
-                    border-radius: 10px;
-                    overflow: hidden;
-                    animation: slideInDown 0.3s ease;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                }
-                
-                @keyframes slideInDown {
-                    from {
-                        transform: translateY(-20px);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-                
-                .theme-selector-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 12px 15px;
-                    background-color: var(--primary-color);
-                    color: white;
-                }
-                
-                .theme-options {
-                    padding: 10px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-                
-                .theme-option {
-                    display: flex;
-                    align-items: center;
-                    padding: 10px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: background-color 0.2s ease;
-                    position: relative;
-                }
-                
-                .theme-option:hover {
-                    background-color: rgba(0,0,0,0.05);
-                }
-                
-                .theme-option.selected {
-                    background-color: rgba(0,0,0,0.08);
-                }
-                
-                .theme-preview {
-                    display: flex;
-                    gap: 4px;
-                    margin-right: 10px;
-                }
-                
-                .theme-color {
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 4px;
-                }
-                
-                .theme-name {
-                    flex: 1;
-                    font-size: 14px;
-                    color: var(--text-color);
-                }
-                
-                .theme-check {
-                    color: var(--primary-color);
-                    font-size: 14px;
+                .news-ticker-card .card-body, .weather-card .card-body {
+                  flex: 1 1 auto;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
                 }
 
                 /* General transition for all interactive elements with slower fade */
@@ -1099,7 +886,7 @@
                 
                 /* Pomodoro Timer Styles */
                 .pomodoro-card {
-                    border-radius: 16px;
+                    border-radius: 1.5rem !important;
                     background-color: #fff;
                     transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     height: auto;
@@ -1274,240 +1061,20 @@
                     perspective: 1000px;
                 }
                 
-                /* News Ticker Styles */
-                .news-ticker-card {
-                    border-radius: 16px;
-                    overflow: hidden;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    position: relative;
-                }
-                
-                .news-ticker-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(135deg, 
-                        rgba(255,255,255,0.15) 0%, 
-                        rgba(255,255,255,0) 50%, 
-                        rgba(255,255,255,0.15) 100%);
-                    transform: translateX(-100%);
-                    animation: shimmer 8s infinite;
-                    pointer-events: none;
-                }
-                
-                @keyframes shimmer {
-                    0% { transform: translateX(-100%); }
-                    20% { transform: translateX(100%); }
-                    100% { transform: translateX(100%); }
-                }
-                
-                .news-ticker-card:hover {
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-                    transform: translateY(-2px);
-                }
-                
-                .news-ticker-container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100px;
-                }
-                
-                .news-ticker-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px 16px;
-                    background-color: #0d6efd;
-                    color: white;
-                    height: 50px;
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .news-ticker-header::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(90deg, 
-                        rgba(255,255,255,0) 0%, 
-                        rgba(255,255,255,0.1) 100%);
-                    pointer-events: none;
-                }
-                
-                .ticker-label {
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                    letter-spacing: 0.05em;
-                    display: flex;
-                    align-items: center;
-                }
-                
-                .ticker-pulse {
-                    display: inline-block;
-                    width: 10px;
-                    height: 10px;
-                    border-radius: 50%;
-                    background-color: #ff4757;
-                    margin-right: 12px;
-                    position: relative;
-                }
-                
-                .ticker-pulse::after {
-                    content: '';
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    border-radius: 50%;
-                    background-color: #ff4757;
-                    animation: pulse 2s infinite;
-                    z-index: 0;
-                }
-                
-                @keyframes pulse {
-                    0% { transform: scale(1); opacity: 1; }
-                    100% { transform: scale(3); opacity: 0; }
-                }
-                
-                .ticker-control .btn-icon {
-                    width: 32px;
-                    height: 32px;
-                    color: white;
-                    margin: 0;
-                    background-color: rgba(255, 255, 255, 0.1);
-                }
-                
-                .ticker-control .btn-icon:hover {
-                    background-color: rgba(255, 255, 255, 0.2);
-                    transform: scale(1.1);
-                }
-                
-                .news-ticker-content {
-                    position: relative;
-                    height: 50px;
-                    overflow: hidden;
-                    background-color: white;
-                }
-                
-                .ticker-decoration {
-                    position: absolute;
-                    top: 4px;
-                    left: 10px;
-                    z-index: 2;
-                    display: flex;
-                    gap: 4px;
-                }
-                
-                .ticker-dot {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    background-color: #ddd;
-                }
-                
-                .ticker-gradient-left, .ticker-gradient-right {
-                    position: absolute;
-                    top: 0;
-                    width: 70px;
-                    height: 100%;
-                    pointer-events: none;
-                    z-index: 2;
-                }
-                
-                .ticker-gradient-left {
-                    left: 0;
-                    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
-                }
-                
-                .ticker-gradient-right {
-                    right: 0;
-                    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-                }
-                
-                .ticker-track {
-                    position: absolute;
-                    white-space: nowrap;
-                    will-change: transform;
-                    animation: ticker 30s linear infinite;
-                }
-                
-                .news-ticker-content.paused .ticker-track {
-                    animation-play-state: paused;
-                }
-                
-                .ticker-item {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 0 24px;
-                    color: #333;
-                    position: relative;
-                    margin-right: 20px;
-                }
-                
-                .ticker-item::after {
-                    content: '•';
-                    position: absolute;
-                    right: -15px;
-                    color: #ccc;
-                    font-size: 1.2rem;
-                }
-                
-                .ticker-item:last-child::after {
-                    content: '';
-                }
-                
-                .ticker-icon {
-                    margin-right: 8px;
-                    color: #0d6efd;
-                    font-size: 1.1rem;
-                    display: inline-block;
-                    position: relative;
-                    z-index: 1;
-                }
-                
-                .ticker-icon::before {
-                    content: '';
-                    position: absolute;
-                    width: 24px;
-                    height: 24px;
-                    background-color: rgba(13, 110, 253, 0.1);
-                    border-radius: 50%;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    z-index: -1;
-                }
-                
-                @keyframes ticker {
-                    0% {
-                        transform: translateX(100%);
-                    }
-                    100% {
-                        transform: translateX(-100%);
-                    }
-                }
-                
                 /* Responsive adjustments - Updated to reduce margins */
                 @media (min-width: 992px) {
                     .select-task-card {
                         margin-left: 5px; /* Reduced from 10px */
                     }
                     
-                    .pomodoro-card, .news-ticker-card {
+                    .pomodoro-card {
                         margin-right: 5px; /* Reduced from 10px */
                     }
                 }
                 
                 /* Task Focus Card - New Styles */
                 .task-focus-card {
-                    border-radius: 16px;
+                    border-radius: 1.5rem !important;
                     border: none;
                     overflow: hidden;
                     box-shadow: 0 3px 15px rgba(0,0,0,0.08);
@@ -1778,211 +1345,217 @@
                     }
                 }
 
-                /* Weather Widget Styles */
-                .weather-card {
-                    border-radius: 16px;
-                    overflow: hidden;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-                    position: relative;
+                .row.align-items-stretch {
+                    min-height: 400px;
+                }
+
+                .pomodoro-card, .task-focus-card {
+                    border-radius: 1.5rem !important;
+                    min-height: 400px;
                     height: 100%;
-                }
-                
-                .weather-card:hover {
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-                    transform: translateY(-2px);
-                }
-                
-                .weather-container {
                     display: flex;
                     flex-direction: column;
-                    height: 100px;
                 }
-                
-                .weather-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px 16px;
-                    background-color: #2196f3;
-                    color: white;
-                    height: 50px;
+
+                .dashboard-footer {
+                    background: none;
+                    border-top: none;
+                    min-height: 60px;
                     position: relative;
-                    overflow: hidden;
+                    z-index: 10;
+                    justify-content: flex-end !important;
                 }
-                
-                .weather-header::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(90deg, 
-                        rgba(255,255,255,0) 0%, 
-                        rgba(255,255,255,0.1) 100%);
-                    pointer-events: none;
-                }
-                
-                .weather-header h6 {
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                    letter-spacing: 0.05em;
-                }
-                
-                .refresh-btn {
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.1);
-                    color: white;
+
+                .theme-selector-footer-container {
+                    position: relative;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    margin-left: auto;
+                }
+
+                .footer-theme-btn {
+                    background: var(--primary-color);
+                    color: #fff;
+                    border-radius: 24px;
+                    padding: 8px 20px;
+                    font-size: 1rem;
+                    border: none;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: all 0.3s;
+                    margin-right: 0;
+                    margin-left: auto;
+                }
+
+                .footer-theme-btn:hover {
+                    background: var(--button-hover-color);
+                    transform: scale(1.05);
+                }
+
+                .footer-theme-panel {
+                    position: absolute;
+                    bottom: 50px;
+                    left: auto;
+                    right: 0;
+                    transform: none;
+                    z-index: 1001;
+                    width: 260px;
+                    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+                }
+
+                @keyframes slideUp {
+                    from {
+                        transform: translateX(-50%) translateY(40px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(-50%) translateY(0);
+                        opacity: 1;
+                    }
+                }
+
+                .theme-btn-label {
+                    font-weight: 500;
+                    letter-spacing: 0.02em;
+                }
+
+                .theme-options.palette-list-style {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    padding: 16px 10px 10px 10px;
+                    min-width: 220px;
+                }
+
+                .theme-option-list {
+                    display: flex;
+                    align-items: center;
+                    padding: 10px 14px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: background 0.18s, box-shadow 0.18s;
+                    border: 2px solid transparent;
+                    min-width: 180px;
+                    box-shadow: none;
+                    margin-bottom: 2px;
+                    background: transparent;
+                }
+
+                .theme-option-list.selected, .theme-option-list:active {
+                    background: #f5f7fa;
+                    border-color: var(--primary-color);
+                    box-shadow: 0 2px 8px rgba(60,60,60,0.08);
+                }
+
+                .theme-option-list:hover {
+                    background: #f0f0f0;
+                }
+
+                .theme-palette-preview-list {
+                    display: flex;
+                    gap: 4px;
+                }
+
+                .theme-color-list {
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    border: 1.5px solid #fff;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                }
+
+                .theme-name-list {
+                    font-size: 1rem;
+                    font-weight: 500;
+                    color: var(--text-color);
+                    margin-left: 8px;
+                }
+
+                .theme-check-list {
+                    color: var(--primary-color);
+                    font-size: 1.1rem;
+                    margin-left: 6px;
+                }
+
+                .material-ui-dropdown {
+                    background: #fff !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 8px 32px rgba(60,60,60,0.18), 0 1.5px 6px rgba(60,60,60,0.10);
+                    border: none;
+                    padding: 0 0 10px 0;
+                    min-width: 260px;
+                    transition: box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
+                    margin-right: 0;
+                    margin-left: 0;
+                }
+
+                .theme-selector-header {
+                    background: #fff;
+                    color: #333;
+                    border-bottom: 1px solid #f0f0f0;
+                    border-radius: 16px 16px 0 0;
+                    box-shadow: none;
+                    padding: 14px 18px 10px 18px;
+                    font-size: 1.08rem;
+                    font-weight: 600;
+                    letter-spacing: 0.01em;
+                }
+
+                .theme-palette-title {
+                    font-size: 1.08rem;
+                    font-weight: 600;
+                    color: var(--primary-color);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    letter-spacing: 0.01em;
+                }
+
+                .theme-close-btn {
+                    background: #f5f7fa;
+                    border: none;
+                    border-radius: 50%;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #888;
+                    font-size: 1.3rem;
+                    transition: background 0.18s, color 0.18s;
+                    margin-left: 10px;
                     cursor: pointer;
                 }
-                
-                .refresh-btn:hover {
-                    background: rgba(255, 255, 255, 0.2);
-                    transform: rotate(180deg);
+
+                .theme-close-btn:hover {
+                    background: #e0e0e0;
+                    color: var(--primary-color);
                 }
-                
-                .weather-content {
-                    position: relative;
-                    height: 50px;
-                    overflow: hidden;
-                    background-color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 0 10px;
+
+                .theme-options.palette-list-style {
+                    background: #fff;
+                    border-radius: 0 0 16px 16px;
+                    box-shadow: none;
+                    padding: 12px 10px 10px 10px;
                 }
-                
-                /* Loading state */
-                .weather-loading {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    color: #78909c;
-                    padding: 10px;
-                    text-align: center;
-                    font-size: 0.85rem;
-                }
-                
-                .spinner-border {
-                    width: 1.5rem;
-                    height: 1.5rem;
-                    border-width: 0.2rem;
-                }
-                
-                /* Error state */
-                .weather-error {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    color: #ff8f00;
-                    padding: 8px;
-                    text-align: center;
-                    font-size: 0.85rem;
-                }
-                
-                .weather-error i {
-                    font-size: 1.2rem;
-                    margin-bottom: 6px;
-                }
-                
-                /* Weather data display */
-                .weather-data {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    width: 100%;
-                }
-                
-                .city-info {
-                    display: flex;
-                    align-items: baseline;
-                    margin-bottom: 5px;
-                }
-                
-                .city-name {
-                    font-size: 0.95rem;
-                    font-weight: 500;
-                    color: #37474f;
+
+                .footer-theme-panel.align-btn-dropdown {
+                    left: auto;
+                    right: 0;
+                    bottom: 50px;
+                    transform: translateY(0);
+                    min-width: 260px;
+                    width: max-content;
                     margin: 0;
-                    margin-right: 5px;
+                    animation: fadeInUp 0.25s cubic-bezier(0.4,0,0.2,1);
                 }
-                
-                .country {
-                    font-size: 0.8rem;
-                    color: #78909c;
-                    margin: 0;
-                }
-                
-                .temp-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin-bottom: 5px;
-                }
-                
-                .weather-icon {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 40px;
-                    width: 40px;
-                    margin-right: 10px;
-                }
-                
-                .weather-icon img {
-                    height: 100%;
-                    width: 100%;
-                    object-fit: contain;
-                }
-                
-                .temp-data {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                
-                .temperature {
-                    font-size: 1.5rem;
-                    font-weight: 600;
-                    color: #263238;
-                    margin: 0;
-                    line-height: 1.2;
-                }
-                
-                .weather-desc {
-                    font-size: 0.8rem;
-                    color: #546e7a;
-                    margin: 0;
-                    text-transform: capitalize;
-                }
-                
-                .weather-details {
-                    display: flex;
-                    justify-content: space-around;
-                    width: 100%;
-                    margin-top: 5px;
-                }
-                
-                .detail {
-                    display: flex;
-                    align-items: center;
-                    font-size: 0.8rem;
-                    color: #546e7a;
-                }
-                
-                .detail i {
-                    margin-right: 5px;
-                    color: #2196f3;
+
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(30px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
             </style>
         </div>
