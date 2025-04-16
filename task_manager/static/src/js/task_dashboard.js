@@ -506,7 +506,6 @@ class TaskDashboard extends Component {
     
     refreshData() {
         this.fetchDashboardData();
-        this.showSnackbar("Dashboard refreshed");
     }
 
     // Task modal functionality
@@ -593,11 +592,9 @@ class TaskDashboard extends Component {
             if (this.state.editTaskId) {
                 // Edit existing task
                 await this.orm.write("task.task", [this.state.editTaskId], taskData);
-                this.showSnackbar("Task updated successfully");
             } else {
                 // Create new task
                 await this.orm.create("task.task", [taskData]);
-                this.showSnackbar("Task created successfully");
             }
 
             this.closeTaskModal(); // Use the new method to close the modal
@@ -672,8 +669,6 @@ class TaskDashboard extends Component {
                 };
                 this.state.editTaskId = taskId;
                 this.state.showTaskModal = true;
-                
-                this.showSnackbar("Editing task: " + task[0].name);
                 
                 // Focus the input field after task is loaded
                 setTimeout(() => {
@@ -759,7 +754,6 @@ class TaskDashboard extends Component {
     async deleteTask(taskId) {
         try {
             await this.orm.unlink("task.task", [taskId]);
-            this.showSnackbar("Task deleted successfully");
             await this.fetchDashboardData();
         } catch (error) {
             console.error("Error deleting task:", error);
@@ -776,7 +770,6 @@ class TaskDashboard extends Component {
                 "action_done",
                 [[taskId]]
             );
-            this.showSnackbar("Task marked as done");
             this.refreshData();
         } catch (error) {
             console.error("Error marking task as done:", error);
@@ -790,7 +783,6 @@ class TaskDashboard extends Component {
                 "action_start",
                 [[taskId]]
             );
-            this.showSnackbar("Task started");
             this.refreshData();
         } catch (error) {
             console.error("Error starting task:", error);
@@ -798,13 +790,8 @@ class TaskDashboard extends Component {
     }
 
     showSnackbar(message) {
-        // Remove notification for theme change
-        if (message && message.startsWith('Theme changed to')) return;
-        this.state.snackbarMessage = message;
-        this.state.showSnackbar = true;
-        setTimeout(() => {
-            this.state.showSnackbar = false;
-        }, 3000);
+        // Disable all notification/snackbar popups
+        return;
     }
 
     onFormKeydown(event) {
@@ -914,9 +901,6 @@ class TaskDashboard extends Component {
         }, 1000);
         
         this.state.timerIntervalId = intervalId;
-        
-        // Show notification
-        this.showSnackbar(`${this.state.timerMode.label} started`);
     }
     
     updateTimerStyle() {
@@ -945,9 +929,6 @@ class TaskDashboard extends Component {
         this.state.timerMinutes = this.state.timerMode.duration;
         this.state.timerSeconds = 0;
         this.state.timerProgress = 0;
-        
-        // Show notification
-        this.showSnackbar(`${this.state.timerMode.label} stopped`);
     }
     
     timerComplete() {
@@ -979,9 +960,6 @@ class TaskDashboard extends Component {
                 }
             }
             
-            // Show notification
-            this.showSnackbar("Focus session completed! Take a break.");
-            
             // Auto switch to short break or long break
             if (this.state.currentPomodoroStreak % 4 === 0) {
                 this.setTimerMode('longBreak');
@@ -990,7 +968,6 @@ class TaskDashboard extends Component {
             }
         } else {
             // Break time completed
-            this.showSnackbar("Break time completed! Ready for another focus session?");
             this.setTimerMode('focus');
         }
         
@@ -1035,7 +1012,6 @@ class TaskDashboard extends Component {
     selectPomodoroTask(task) {
         // Set the selected task
         this.state.selectedPomodoroTask = task;
-        this.showSnackbar(`Task "${task.name}" selected for focus session`);
     }
     
     toggleTaskSelection(task) {
@@ -1043,17 +1019,14 @@ class TaskDashboard extends Component {
         if (this.state.selectedPomodoroTask && this.state.selectedPomodoroTask.id === task.id) {
             // Currently selected, so deselect it
             this.state.selectedPomodoroTask = null;
-            this.showSnackbar(`Deselected task "${task.name}"`);
         } else {
             // Not selected, so select it
             this.state.selectedPomodoroTask = task;
-            this.showSnackbar(`Selected task "${task.name}" for focus session`);
         }
     }
     
     clearPomodoroTask() {
         this.state.selectedPomodoroTask = null;
-        this.showSnackbar("Task unselected");
     }
     
     getOpenTasks() {
@@ -1068,7 +1041,6 @@ class TaskDashboard extends Component {
     // News Ticker Functions
     toggleNewsTickerPause() {
         this.state.newsTickerPaused = !this.state.newsTickerPaused;
-        this.showSnackbar(this.state.newsTickerPaused ? "News ticker paused" : "News ticker resumed");
     }
 }
 

@@ -268,16 +268,10 @@
                 <div class="theme-selector-footer-container ms-auto position-relative"
                      t-on-mouseenter="() => { state.themeSystem.showThemeSelector = true }"
                      t-on-mouseleave="() => { state.themeSystem.showThemeSelector = false }">
-                    <button class="theme-selector-toggle footer-theme-btn theme-btn-modern spin-theme-btn">
-                        <span class="theme-btn-palette-icon spin-on-hover">
-                            <svg class="theme-palette-svg spin-fan-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="14" cy="14" r="13" fill="var(--primary-color)" stroke="#fff" stroke-width="2"/>
-                                <circle cx="8.5" cy="10" r="2.5" fill="var(--secondary-color)"/>
-                                <circle cx="19.5" cy="10" r="2.5" fill="var(--accent-color)"/>
-                                <circle cx="14" cy="18.5" r="2.5" fill="#fff"/>
-                            </svg>
+                    <button class="theme-selector-toggle footer-theme-btn theme-btn-modern" style="justify-content: center; align-items: center;">
+                        <span class="theme-btn-label" style="font-size:0.95rem;font-weight:700;letter-spacing:0.08em;display:flex;align-items:center;justify-content:center;width:100%;">
+                            Theme
                         </span>
-                        <span class="theme-btn-label">Theme</span>
                     </button>
                     <div t-if="state.themeSystem.showThemeSelector" class="theme-selector-panel shadow footer-theme-panel material-ui-dropdown align-btn-dropdown animate-up" t-on-click.stop="">
                         <div class="theme-selector-header d-flex align-items-center justify-content-between">
@@ -1425,23 +1419,6 @@
                     background: linear-gradient(90deg, var(--button-hover-color) 0%, var(--secondary-color) 100%);
                     transform: scale(1.06);
                     box-shadow: 0 8px 24px rgba(0,0,0,0.13);
-                }
-
-                .spin-on-hover {
-                    display: flex;
-                    align-items: center;
-                    margin-right: 6px;
-                    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
-                }
-
-                .spin-theme-btn:hover .spin-on-hover .theme-palette-svg,
-                .theme-selector-footer-container:hover .spin-on-hover .theme-palette-svg {
-                    animation: spin-fan 1.1s linear infinite !important;
-                }
-
-                @keyframes spin-fan {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
                 }
 
                 .theme-btn-label {
