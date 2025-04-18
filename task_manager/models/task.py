@@ -168,4 +168,56 @@ class TaskTag(models.Model):
     
     name = fields.Char(string='Name', required=True)
     color = fields.Integer(string='Color Index', default=10)
-    task_ids = fields.Many2many('task.task', string='Tasks') 
+    task_ids = fields.Many2many('task.task', string='Tasks')
+
+
+class TaskTimerState(models.Model):
+    _name = 'task.timer.state'
+    _description = 'Task Timer State'
+
+    userId = fields.Many2one('res.users', string='User', required=True, ondelete='cascade', index=True)
+    timerActive = fields.Boolean(string='Timer Active', default=False)
+    timerPaused = fields.Boolean(string='Timer Paused', default=False)
+    timerMinutes = fields.Integer(string='Timer Minutes', default=25)
+    timerSeconds = fields.Integer(string='Timer Seconds', default=0)
+    timerMode = fields.Char(string='Timer Mode', default='focus')
+    timerProgress = fields.Integer(string='Timer Progress', default=0)
+    currentPomodoroStreak = fields.Integer(string='Current Pomodoro Streak', default=0)
+    completedPomodoros = fields.Integer(string='Completed Pomodoros', default=0)
+    lastUpdate = fields.Datetime(string='Last Update', default=fields.Datetime.now)
+
+    _sql_constraints = [
+        ('user_unique', 'unique(userId)', 'Each user can only have one timer state.')
+    ]
+
+    @api.model
+    def getUserTimerState(self, userId):
+        return self.search([('userId', '=', userId)], limit=1)
+
+    @api.model
+    def saveUserTimerState(self, userId, timerData):
+        timerState = self.getUserTimerState(userId)
+        values = {
+            'timerActive': timerData.get('timerActive', False),
+            'timerPaused': timerData.get('timerPaused', False),
+            'timerMinutes': timerData.get('timerMinutes', 25),
+            'timerSeconds': timerData.get('timerSeconds', 0),
+            'timerMode': timerData.get('timerMode', 'focus'),
+            'timerProgress': timerData.get('timerProgress', 0),
+            'currentPomodoroStreak': timerData.get('currentPomodoroStreak', 0),
+            'completedPomodoros': timerData.get('completedPomodoros', 0),
+            'lastUpdate': fields.Datetime.now(),
+        }
+        if timerState:
+            timerState.write(values)
+        else:
+            values['userId'] = userId
+            timerState = self.create(values)
+        return timerState
+
+    @api.model
+    def resetUserTimerState(self, userId):
+        timerState = self.getUserTimerState(userId)
+        if timerState:
+            timerState.unlink()
+        return True

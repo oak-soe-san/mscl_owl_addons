@@ -31,4 +31,34 @@ class TaskController(http.Controller):
         )
         result['urgent_tasks'] = urgent_tasks
         
-        return result 
+        return result
+
+    @http.route('/task_manager/timer/get_state', type='json', auth='user')
+    def get_timer_state(self):
+        userId = request.env.user.id
+        timerState = request.env['task.timer.state'].sudo().getUserTimerState(userId)
+        if not timerState:
+            return {}
+        return {
+            'timerActive': timerState.timerActive,
+            'timerPaused': timerState.timerPaused,
+            'timerMinutes': timerState.timerMinutes,
+            'timerSeconds': timerState.timerSeconds,
+            'timerMode': timerState.timerMode,
+            'timerProgress': timerState.timerProgress,
+            'currentPomodoroStreak': timerState.currentPomodoroStreak,
+            'completedPomodoros': timerState.completedPomodoros,
+            'lastUpdate': timerState.lastUpdate,
+        }
+
+    @http.route('/task_manager/timer/save_state', type='json', auth='user')
+    def save_timer_state(self, timerData):
+        userId = request.env.user.id
+        request.env['task.timer.state'].sudo().saveUserTimerState(userId, timerData)
+        return {'result': 'ok'}
+
+    @http.route('/task_manager/timer/reset_state', type='json', auth='user')
+    def reset_timer_state(self):
+        userId = request.env.user.id
+        request.env['task.timer.state'].sudo().resetUserTimerState(userId)
+        return {'result': 'ok'}

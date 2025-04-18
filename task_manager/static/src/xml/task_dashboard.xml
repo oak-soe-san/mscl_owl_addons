@@ -86,96 +86,150 @@
                 <div class="col-12 col-lg-8 d-flex align-items-stretch">
                     <div class="card shadow-sm border-0 pomodoro-card flex-fill d-flex flex-column h-100 rounded-4">
                         <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="card-title m-0">Pomodoro Timer</h4>
-                                <div>
-                                    <button t-if="!state.timerActive" 
-                                            class="btn btn-primary rounded-pill shadow-sm"
-                                            t-on-click="startPomodoro">
-                                        <i class="fa fa-play me-1"></i> Start Focus
-                                    </button>
-                                    <button t-else="" 
-                                            class="btn btn-danger rounded-pill shadow-sm"
-                                            t-on-click="stopPomodoro">
-                                        <i class="fa fa-stop me-1"></i> Stop
-                                    </button>
-                                </div>
+                          <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="card-title m-0">Pomodoro Timer</h4>
+                            <div class="d-flex align-items-center gap-2">
+                              <!-- Single Large Circle Button for Pomodoro Control -->
+                              <button
+                                t-if="!state.timerActive and !state.timerPaused"
+                                name="startPomodoro"
+                                class="pomodoro-main-btn btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                                t-on-click="startPomodoro"
+                                title="Start Pomodoro"
+                                style="width:64px;height:64px;font-size:2rem;">
+                                <i class="fa fa-play"></i>
+                              </button>
+                              <button
+                                t-if="state.timerActive"
+                                name="pausePomodoro"
+                                class="pomodoro-main-btn btn btn-warning rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                                t-on-click="pausePomodoro"
+                                title="Pause Pomodoro"
+                                style="width:64px;height:64px;font-size:2rem;">
+                                <i class="fa fa-pause"></i>
+                              </button>
+                              <button
+                                t-if="state.timerPaused"
+                                name="resumePomodoro"
+                                class="pomodoro-main-btn btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                                t-on-click="resumePomodoro"
+                                title="Resume Pomodoro"
+                                style="width:64px;height:64px;font-size:2rem;">
+                                <i class="fa fa-play"></i>
+                              </button>
                             </div>
-                            
-                            <!-- Timer Display -->
-                            <div class="pomodoro-timer-display">
-                                <div class="timer-circle">
-                                    <div class="timer-progress">
-                                        <div class="timer-inner">
-                                            <div class="timer-time">
-                                                <span t-esc="formatTime(state.timerMinutes)"></span> : <span t-esc="formatTime(state.timerSeconds)"></span>
-                                            </div>
-                                            <div class="timer-label" t-esc="state.timerMode.label"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Mode Buttons -->
-                            <div class="pomodoro-modes mt-4">
-                                <div class="btn-group w-100">
-                                    <button t-on-click="() => this.setTimerMode('focus')"
-                                            t-att-class="'btn ' + (state.timerMode.id === 'focus' ? 'btn-primary' : 'btn-outline-primary')">
-                                        Focus (25m)
-                                    </button>
-                                    <button t-on-click="() => this.setTimerMode('shortBreak')"
-                                            t-att-class="'btn ' + (state.timerMode.id === 'shortBreak' ? 'btn-success' : 'btn-outline-success')">
-                                        Short Break (5m)
-                                    </button>
-                                    <button t-on-click="() => this.setTimerMode('longBreak')"
-                                            t-att-class="'btn ' + (state.timerMode.id === 'longBreak' ? 'btn-info' : 'btn-outline-info')">
-                                        Long Break (15m)
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Selected Task For Pomodoro (if any) -->
-                            <div class="mt-4" t-if="state.selectedPomodoroTask">
-                                <div class="current-task p-3 rounded">
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-3">
-                                            <i class="fa fa-check-circle text-success fa-2x"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-0">Current Task</h6>
-                                            <p class="mb-0 text-primary" t-esc="state.selectedPomodoroTask.name"></p>
-                                        </div>
-                                        <button class="btn btn-sm btn-link text-muted" t-on-click="clearPomodoroTask">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Pomodoro Session Stats -->
-                            <div class="pomodoro-stats mt-4">
-                                <div class="row text-center">
-                                    <div class="col-4">
-                                        <div class="stat-circle">
-                                            <span t-esc="state.completedPomodoros"></span>
-                                        </div>
-                                        <div class="stat-label">Completed</div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="stat-circle">
-                                            <span t-esc="state.pomodoroGoal"></span>
-                                        </div>
-                                        <div class="stat-label">Goal</div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="stat-circle">
-                                            <span t-esc="state.currentPomodoroStreak"></span>
-                                        </div>
-                                        <div class="stat-label">Streak</div>
-                                    </div>
-                                </div>
-                            </div>
+                          </div>
+                          
+                          <!-- Timer Display -->
+                          <div class="pomodoro-timer-display">
+                              <div class="timer-circle">
+                                  <div class="timer-progress">
+                                      <div class="timer-inner">
+                                          <div class="timer-time" t-att-class="state.timerPaused ? 'timer-blink' : ''">
+                                              <span t-esc="formatTime(state.timerMinutes)"></span> : <span t-esc="formatTime(state.timerSeconds)"></span>
+                                          </div>
+                                          <div class="timer-label" t-esc="state.timerMode.label"></div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          <!-- Mode Buttons -->
+                          <div class="pomodoro-modes mt-4">
+                              <div class="btn-group w-100">
+                                  <button t-on-click="() => this.setTimerMode('focus')"
+                                          t-att-class="'btn ' + (state.timerMode.id == 'focus' ? 'btn-primary' : 'btn-outline-primary')">
+                                      Focus (25m)
+                                  </button>
+                                  <button t-on-click="() => this.setTimerMode('shortBreak')"
+                                          t-att-class="'btn ' + (state.timerMode.id == 'shortBreak' ? 'btn-success' : 'btn-outline-success')">
+                                      Short Break (5m)
+                                  </button>
+                                  <button t-on-click="() => this.setTimerMode('longBreak')"
+                                          t-att-class="'btn ' + (state.timerMode.id == 'longBreak' ? 'btn-info' : 'btn-outline-info')">
+                                      Long Break (15m)
+                                  </button>
+                              </div>
+                          </div>
+                          
+                          <!-- Selected Task For Pomodoro (if any) -->
+                          <div class="mt-4" t-if="state.selectedPomodoroTask">
+                              <div class="current-task p-3 rounded">
+                                  <div class="d-flex align-items-center">
+                                      <div class="me-3">
+                                          <i class="fa fa-check-circle text-success fa-2x"></i>
+                                      </div>
+                                      <div class="flex-grow-1">
+                                          <h6 class="mb-0">Current Task</h6>
+                                          <p class="mb-0 text-primary" t-esc="state.selectedPomodoroTask.name"></p>
+                                      </div>
+                                      <button class="btn btn-sm btn-link text-muted" t-on-click="clearPomodoroTask">
+                                          <i class="fa fa-times"></i>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          <!-- Pomodoro Session Stats -->
+                          <div class="pomodoro-stats mt-4">
+                              <div class="row text-center">
+                                  <div class="col-4">
+                                      <div class="stat-circle">
+                                          <span t-esc="state.completedPomodoros"></span>
+                                      </div>
+                                      <div class="stat-label">Completed</div>
+                                  </div>
+                                  <div class="col-4">
+                                      <div class="stat-circle">
+                                          <span t-esc="state.pomodoroGoal"></span>
+                                      </div>
+                                      <div class="stat-label">Goal</div>
+                                  </div>
+                                  <div class="col-4">
+                                      <div class="stat-circle">
+                                          <span t-esc="state.currentPomodoroStreak"></span>
+                                      </div>
+                                      <div class="stat-label">Streak</div>
+                                  </div>
+                              </div>
+                          </div>
                         </div>
+                        <style>
+                          .pomodoro-main-btn {
+                            transition: box-shadow 0.3s, background 0.3s, color 0.3s;
+                            box-shadow: 0 4px 16px rgba(33,150,243,0.12), 0 1.5px 6px rgba(33,150,243,0.10);
+                            border: none;
+                            outline: none;
+                            font-weight: 600;
+                            color: #fff;
+                            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                            position: relative;
+                          }
+                          .pomodoro-main-btn:active {
+                            transform: scale(0.96);
+                            box-shadow: 0 2px 8px rgba(33,150,243,0.10);
+                          }
+                          .pomodoro-main-btn.btn-warning {
+                            background: linear-gradient(135deg, #fbc02d, #ff9800);
+                            color: #fff;
+                          }
+                          .pomodoro-main-btn.btn-success {
+                            background: linear-gradient(135deg, #43a047, #00c853);
+                            color: #fff;
+                          }
+                          .pomodoro-main-btn.btn-primary {
+                            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                            color: #fff;
+                          }
+                          .pomodoro-main-btn i {
+                            font-size: 2.2rem;
+                            margin: 0;
+                          }
+                          .pomodoro-main-btn:focus {
+                            outline: none;
+                            box-shadow: 0 0 0 4px rgba(33,150,243,0.15);
+                          }
+                        </style>
                     </div>
                 </div>
                 
@@ -190,7 +244,7 @@
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <div t-if="getOpenTasks().length === 0" class="empty-state">
+                            <div t-if="getOpenTasks().length == 0" class="empty-state">
                                 <div class="empty-tasks-icon">
                                     <i class="fa fa-tasks"></i>
                                 </div>
@@ -200,34 +254,28 @@
                                 </button>
                             </div>
                             <div t-else="" class="task-list">
-                                <div t-foreach="getOpenTasks()" t-as="task" t-key="task.id" 
-                                     class="task-item-wrapper">
+                                <div t-foreach="getOpenTasks()" t-as="task" t-key="task.id" t-att-class="task-item-wrapper">
                                     <div class="task-item"
-                                         t-att-class="{'selected': state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id}"
+                                         t-att-class="'task-item' + (state.selectedPomodoroTask and state.selectedPomodoroTask.id == task.id ? ' selected' : '')"
                                          t-att-data-task-id="task.id"
                                          t-on-click="() => this.toggleTaskSelection(task)">
                                         <div class="task-checkbox" t-on-click.stop="() => this.toggleTaskSelection(task)">
                                             <div class="checkbox-circle">
-                                                <i t-if="state.selectedPomodoroTask &amp;&amp; state.selectedPomodoroTask.id === task.id" 
-                                                   class="fa fa-check"></i>
+                                                <i t-if="state.selectedPomodoroTask and state.selectedPomodoroTask.id == task.id" class="fa fa-check"></i>
                                             </div>
                                         </div>
                                         <div class="task-details">
                                             <div class="task-name" t-esc="task.name"></div>
                                             <div class="task-meta">
-                                                <span t-if="task.priority === '3'" class="priority urgent">Urgent</span>
-                                                <span t-elif="task.priority === '2'" class="priority high">High Priority</span>
+                                                <span t-if="task.priority == '3'" class="priority urgent">Urgent</span>
+                                                <span t-elif="task.priority == '2'" class="priority high">High Priority</span>
                                             </div>
                                         </div>
                                         <div class="task-actions">
-                                            <button class="action-btn edit-btn" 
-                                                    t-on-click.stop="() => this.editTask(task.id)" 
-                                                    title="Edit task">
+                                            <button class="action-btn edit-btn" t-on-click.stop="() => this.editTask(task.id)" title="Edit task">
                                                 <i class="fa fa-pencil"></i>
                                             </button>
-                                            <button class="action-btn delete-btn" 
-                                                    t-on-click.stop="() => this.confirmDeleteTask(task.id, task.name)" 
-                                                    title="Delete task">
+                                            <button class="action-btn delete-btn" t-on-click.stop="() => this.confirmDeleteTask(task.id, task.name)" title="Delete task">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </div>
@@ -282,7 +330,7 @@
                         </div>
                         <div class="theme-options palette-list-style">
                             <div t-foreach="Object.keys(state.themeSystem.themes)" t-as="theme" t-key="theme"
-                                 t-attf-class="theme-option-list {{state.themeSystem.currentTheme === theme ? 'selected' : ''}}"
+                                 t-attf-class="theme-option-list {{state.themeSystem.currentTheme == theme ? 'selected' : ''}}"
                                  t-on-click="() => this.changeTheme(theme)">
                                 <div class="theme-palette-preview-list">
                                     <div class="theme-color-list" t-attf-style="background-color: {{state.themeSystem.themes[theme].primaryColor}}"></div>
@@ -290,7 +338,7 @@
                                     <div class="theme-color-list" t-attf-style="background-color: {{state.themeSystem.themes[theme].accentColor}}"></div>
                                 </div>
                                 <div class="theme-name-list ms-2" t-esc="state.themeSystem.themes[theme].name"></div>
-                                <div t-if="state.themeSystem.currentTheme === theme" class="theme-check-list ms-2">
+                                <div t-if="state.themeSystem.currentTheme == theme" class="theme-check-list ms-2">
                                     <i class="fa fa-check"></i>
                                 </div>
                             </div>
@@ -956,6 +1004,17 @@
                     font-weight: 600;
                     line-height: 1.2;
                     color: #212121;
+                }
+
+                .timer-time.timer-blink {
+                    animation: blink-timer 1s steps(2, start) infinite;
+                    color: #d32f2f;
+                }
+
+                @keyframes blink-timer {
+                    to {
+                        visibility: hidden;
+                    }
                 }
                 
                 .timer-label {

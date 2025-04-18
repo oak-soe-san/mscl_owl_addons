@@ -43,6 +43,7 @@ class TaskDashboard extends Component {
             
             // Pomodoro Timer State
             timerActive: false,
+            timerPaused: false,
             timerMinutes: 25,
             timerSeconds: 0,
             timerProgress: 0,
@@ -166,12 +167,98 @@ class TaskDashboard extends Component {
             
             // Initialize weather data
             this.initWeather();
+
+            // Restore timer state from localStorage if available
+            this.restoreTimerState();
+            // If timer was paused (not active, but not at initial duration), set paused state
+            if (!this.state.timerActive && (this.state.timerMinutes !== this.state.timerMode.duration || this.state.timerSeconds !== 0)) {
+                this.state.timerPaused = true;
+            } else {
+                this.state.timerPaused = false;
+            }
         });
         
         // Apply the theme immediately when mounted and whenever it changes
         useEffect(() => {
             this.applyTheme(this.state.themeSystem.currentTheme);
         }, () => [this.state.themeSystem.currentTheme]);
+
+        // Save timer state on page unload
+        window.addEventListener('beforeunload', this.saveTimerState);
+
+        this.resumePomodoro = async () => {
+            if (this.state.timerActive || !this.state.timerPaused) return;
+            this.state.timerActive = true;
+            this.state.timerPaused = false;
+
+            // Calculate total seconds for the progress calculation
+            const totalSeconds = this.state.timerMode.duration * 60;
+            let elapsedSeconds = totalSeconds - (this.state.timerMinutes * 60 + this.state.timerSeconds);
+
+            // Clear any existing interval
+            if (this.state.timerIntervalId) {
+                clearInterval(this.state.timerIntervalId);
+            }
+
+            // Start the timer interval
+            const intervalId = setInterval(() => {
+                if (this.state.timerSeconds === 0) {
+                    if (this.state.timerMinutes === 0) {
+                        this.timerComplete();
+                        return;
+                    }
+                    this.state.timerMinutes--;
+                    this.state.timerSeconds = 59;
+                } else {
+                    this.state.timerSeconds--;
+                }
+                elapsedSeconds++;
+                this.state.timerProgress = Math.round((elapsedSeconds / totalSeconds) * 100);
+                this.updateTimerStyle();
+            }, 1000);
+
+            this.state.timerIntervalId = intervalId;
+            await this.saveTimerStateToBackend();
+        };
+    }
+    
+    // Save timer state to localStorage
+    saveTimerState = () => {
+        const timerState = {
+            timerActive: this.state.timerActive,
+            timerPaused: this.state.timerPaused,
+            timerMinutes: this.state.timerMinutes,
+            timerSeconds: this.state.timerSeconds,
+            timerMode: this.state.timerMode,
+            timerProgress: this.state.timerProgress,
+            currentPomodoroStreak: this.state.currentPomodoroStreak,
+            completedPomodoros: this.state.completedPomodoros
+        };
+        localStorage.setItem('taskManagerTimerState', JSON.stringify(timerState));
+    }
+
+    // Restore timer state from localStorage
+    restoreTimerState() {
+        try {
+            const timerStateStr = localStorage.getItem('taskManagerTimerState');
+            if (timerStateStr) {
+                const timerState = JSON.parse(timerStateStr);
+                this.state.timerActive = timerState.timerActive;
+                this.state.timerPaused = timerState.timerPaused || false;
+                this.state.timerMinutes = timerState.timerMinutes;
+                this.state.timerSeconds = timerState.timerSeconds;
+                this.state.timerMode = timerState.timerMode;
+                this.state.timerProgress = timerState.timerProgress;
+                this.state.currentPomodoroStreak = timerState.currentPomodoroStreak;
+                this.state.completedPomodoros = timerState.completedPomodoros;
+                // If timer was active, resume it
+                if (this.state.timerActive) {
+                    this.startPomodoro();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to restore timer state:', error);
+        }
     }
     
     // Load user theme preference from browser storage
@@ -265,6 +352,9 @@ class TaskDashboard extends Component {
             this.audioElement.pause();
             this.audioElement = null;
         }
+
+        // Remove the beforeunload event listener
+        window.removeEventListener('beforeunload', this.saveTimerState);
     }
     
     // Weather Functions
@@ -858,6 +948,7 @@ class TaskDashboard extends Component {
         if (this.state.timerActive) return;
         
         this.state.timerActive = true;
+        this.state.timerPaused = false;
         
         // Reset the timer to the current mode's duration
         this.state.timerMinutes = this.state.timerMode.duration;
@@ -901,6 +992,9 @@ class TaskDashboard extends Component {
         }, 1000);
         
         this.state.timerIntervalId = intervalId;
+
+        // Save timer state after starting
+        this.saveTimerState();
     }
     
     updateTimerStyle() {
@@ -924,13 +1018,84 @@ class TaskDashboard extends Component {
         }
         
         this.state.timerActive = false;
+        this.state.timerPaused = false;
         
         // Reset the timer to the current mode's duration
         this.state.timerMinutes = this.state.timerMode.duration;
         this.state.timerSeconds = 0;
         this.state.timerProgress = 0;
+
+        this.saveTimerState();
     }
     
+    pausePomodoro() {
+        if (!this.state.timerActive) return;
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+            this.state.timerIntervalId = null;
+        }
+        this.state.timerActive = false;
+        this.state.timerPaused = true;
+        this.saveTimerState();
+    }
+
+    resumePomodoro() {
+        if (this.state.timerActive || !this.state.timerPaused) return;
+        this.state.timerActive = true;
+        this.state.timerPaused = false;
+
+        // Calculate total seconds for the progress calculation
+        const totalSeconds = this.state.timerMode.duration * 60;
+        const elapsedSeconds = totalSeconds - (this.state.timerMinutes * 60 + this.state.timerSeconds);
+
+        // Clear any existing interval
+        if (this.state.timerIntervalId) {
+            clearInterval(this.state.timerIntervalId);
+        }
+
+        // Start the timer interval
+        const intervalId = setInterval(() => {
+            // Update seconds and minutes
+            if (this.state.timerSeconds === 0) {
+                if (this.state.timerMinutes === 0) {
+                    // Timer complete
+                    this.timerComplete();
+                    return;
+                }
+                this.state.timerMinutes--;
+                this.state.timerSeconds = 59;
+            } else {
+                this.state.timerSeconds--;
+            }
+
+            // Update progress percentage
+            const currentElapsedSeconds = totalSeconds - (this.state.timerMinutes * 60 + this.state.timerSeconds);
+            this.state.timerProgress = Math.round((currentElapsedSeconds / totalSeconds) * 100);
+
+            // Update the progress circle style
+            this.updateTimerStyle();
+
+        }, 1000);
+
+        this.state.timerIntervalId = intervalId;
+
+        this.saveTimerState();
+    }
+    
+    async saveTimerStateToBackend() {
+        const timerData = {
+            timerActive: this.state.timerActive,
+            timerPaused: this.state.timerPaused,
+            timerMinutes: this.state.timerMinutes,
+            timerSeconds: this.state.timerSeconds,
+            timerMode: this.state.timerMode.id,
+            timerProgress: this.state.timerProgress,
+            currentPomodoroStreak: this.state.currentPomodoroStreak,
+            completedPomodoros: this.state.completedPomodoros
+        };
+        await this.orm.call('task.timer.state', 'saveUserTimerState', [this.userService.userId, timerData]);
+    }
+
     timerComplete() {
         // Clear the interval
         if (this.state.timerIntervalId) {
@@ -972,6 +1137,8 @@ class TaskDashboard extends Component {
         }
         
         this.state.timerActive = false;
+
+        this.saveTimerState();
     }
     
     setTimerMode(modeId) {

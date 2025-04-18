@@ -3,3 +3,4 @@ access_task_task_user,task.task.user,model_task_task,,1,1,1,1
 access_task_task_manager,task.task.manager,model_task_task,,1,1,1,1
 access_task_tag_user,task.tag.user,model_task_tag,,1,1,1,1
 access_task_tag_manager,task.tag.manager,model_task_tag,,1,1,1,1
+access_task_timer_state_user,task.timer.state user,model_task_timer_state,base.group_user,1,1,1,1
