@@ -192,7 +192,8 @@ class TaskTimerState(models.Model):
 
     @api.model
     def getUserTimerState(self, userId):
-        return self.search([('userId', '=', userId)], limit=1)
+        # Always use sudo to avoid access errors for regular users
+        return self.sudo().search([('userId', '=', userId)], limit=1)
 
     @api.model
     def saveUserTimerState(self, userId, timerData):
@@ -209,15 +210,15 @@ class TaskTimerState(models.Model):
             'lastUpdate': fields.Datetime.now(),
         }
         if timerState:
-            timerState.write(values)
+            timerState.sudo().write(values)
         else:
             values['userId'] = userId
-            timerState = self.create(values)
+            timerState = self.sudo().create(values)
         return timerState
 
     @api.model
     def resetUserTimerState(self, userId):
         timerState = self.getUserTimerState(userId)
         if timerState:
-            timerState.unlink()
+            timerState.sudo().unlink()
         return True
