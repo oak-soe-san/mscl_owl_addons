@@ -64,6 +64,12 @@ class TaskDashboard extends Component {
             selectedPomodoroTask: null,
             timerIntervalId: null,
             
+            // Confirmation dialog for timer mode switch
+            confirmTimerModeSwitch: {
+                show: false,
+                targetMode: null,
+            },
+            
             // News Ticker State
             newsTickerPaused: false,
             newsItems: [
@@ -916,22 +922,17 @@ class TaskDashboard extends Component {
     }
     
     stopPomodoro() {
-        if (!this.state.timerActive) return;
-        
-        // Clear the interval
+        // Always clear the interval, regardless of active/paused state
         if (this.state.timerIntervalId) {
             clearInterval(this.state.timerIntervalId);
             this.state.timerIntervalId = null;
         }
-        
         this.state.timerActive = false;
         this.state.timerPaused = false;
-        
-        // Reset the timer to the current mode's duration
         this.state.timerMinutes = this.state.timerMode.duration;
         this.state.timerSeconds = 0;
         this.state.timerProgress = 0;
-
+        this.updateTimerStyle();
         this.saveTimerState();
     }
     
@@ -1067,6 +1068,29 @@ class TaskDashboard extends Component {
         this.updateTimerStyle();
     }
     
+    requestTimerModeSwitch(modeId) {
+        if (this.state.timerActive || this.state.timerPaused) {
+            this.state.confirmTimerModeSwitch = {
+                show: true,
+                targetMode: modeId,
+            };
+        } else {
+            this.setTimerMode(modeId);
+        }
+    }
+
+    confirmTimerModeSwitch() {
+        if (this.state.confirmTimerModeSwitch.targetMode) {
+            this.stopPomodoro();
+            this.setTimerMode(this.state.confirmTimerModeSwitch.targetMode);
+        }
+        this.state.confirmTimerModeSwitch = { show: false, targetMode: null };
+    }
+
+    cancelTimerModeSwitch() {
+        this.state.confirmTimerModeSwitch = { show: false, targetMode: null };
+    }
+    
     formatTime(value) {
         return value < 10 ? `0${value}` : `${value}`;
     }
@@ -1115,6 +1139,15 @@ class TaskDashboard extends Component {
     // News Ticker Functions
     toggleNewsTickerPause() {
         this.state.newsTickerPaused = !this.state.newsTickerPaused;
+    }
+
+    // Only allow timer mode switch if timer is NOT active
+    onTimerModeButtonClick(modeId) {
+        if (this.state.timerActive) {
+            // Optionally, show a notification or tooltip here
+            return;
+        }
+        this.setTimerMode(modeId);
     }
 }
 

@@ -117,6 +117,15 @@
                                 style="width:64px;height:64px;font-size:2rem;">
                                 <i class="fa fa-play"></i>
                               </button>
+                              <button
+                                t-if="state.timerActive or state.timerPaused"
+                                name="stopPomodoro"
+                                class="pomodoro-stop-btn btn rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                                t-on-click="stopPomodoro"
+                                title="Stop Pomodoro"
+                                style="width:56px;height:56px;font-size:1.7rem;margin-left:8px;">
+                                <i class="fa fa-stop"></i>
+                              </button>
                             </div>
                           </div>
                           
@@ -137,15 +146,15 @@
                           <!-- Mode Buttons -->
                           <div class="pomodoro-modes mt-4">
                               <div class="btn-group w-100">
-                                  <button t-on-click="() => this.setTimerMode('focus')"
+                                  <button t-on-click="() => this.onTimerModeButtonClick('focus')"
                                           t-att-class="'btn ' + (state.timerMode.id == 'focus' ? 'btn-primary' : 'btn-outline-primary')">
                                       Focus (25m)
                                   </button>
-                                  <button t-on-click="() => this.setTimerMode('shortBreak')"
+                                  <button t-on-click="() => this.onTimerModeButtonClick('shortBreak')"
                                           t-att-class="'btn ' + (state.timerMode.id == 'shortBreak' ? 'btn-success' : 'btn-outline-success')">
                                       Short Break (5m)
                                   </button>
-                                  <button t-on-click="() => this.setTimerMode('longBreak')"
+                                  <button t-on-click="() => this.onTimerModeButtonClick('longBreak')"
                                           t-att-class="'btn ' + (state.timerMode.id == 'longBreak' ? 'btn-info' : 'btn-outline-info')">
                                       Long Break (15m)
                                   </button>
@@ -228,6 +237,18 @@
                           .pomodoro-main-btn:focus {
                             outline: none;
                             box-shadow: 0 0 0 4px rgba(33,150,243,0.15);
+                          }
+                          .pomodoro-stop-btn {
+                            background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+                            color: #fff;
+                            border: none;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 8px rgba(229,57,53,0.18);
+                            transition: background 0.3s, box-shadow 0.3s;
+                          }
+                          .pomodoro-stop-btn:hover {
+                            background: linear-gradient(135deg, #b71c1c 0%, #e53935 100%);
+                            box-shadow: 0 4px 16px rgba(229,57,53,0.28);
                           }
                         </style>
                     </div>
