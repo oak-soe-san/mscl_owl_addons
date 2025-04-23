@@ -1,0 +1,50 @@
+<templates xml:space="preserve">
+    <t t-name="properties_landing_page.LandingDashboard">
+        <div class="o_landing_dashboard">
+            <!-- Loading state -->
+            <div t-if="state.isLoading" class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Loading your modules...</p>
+            </div>
+            
+            <!-- Error state -->
+            <div t-if="!state.isLoading and state.error" class="alert alert-danger" role="alert">
+                <t t-esc="state.error"/>
+            </div>
+            
+            <!-- Empty state -->
+            <div t-if="!state.isLoading and !state.error and state.modules.length === 0" class="alert alert-info" role="alert">
+                No modules found. Please install some applications to see them here.
+            </div>
+            
+            <!-- Success state with modules -->
+            <div t-if="!state.isLoading and !state.error and state.modules.length > 0">
+                <h3 class="mb-4">Your Installed Applications</h3>
+                <div class="o_module_grid">
+                    <t t-foreach="state.modules" t-as="mod" t-key="mod.id">
+                        <div class="o_module_card" t-on-click="() => navigateToModule(mod.url)" style="cursor: pointer;">
+                            <div class="o_module_icon">
+                                <img t-if="mod.icon" t-att-src="mod.icon" alt="icon"/>
+                                <div t-else="" class="o_module_default_icon">
+                                    <i class="fa fa-cube fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="o_module_info">
+                                <strong t-esc="mod.shortdesc"/><br/>
+                                <div class="o_module_name" t-esc="mod.name"/>
+                                <div class="o_module_category">
+                                    <span t-esc="mod.category_id"/>
+                                </div>
+                                <div class="o_module_summary mt-2" t-if="mod.summary">
+                                    <small t-esc="mod.summary"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,8 @@
+<odoo>
+    <record id="landing_page_action" model="ir.actions.act_url">
+        <field name="name">Properties Landing Page</field>
+        <field name="url">/properties_landing_page</field>
+        <field name="target">self</field>
+    </record>
+    <menuitem id="menu_properties_landing_page_root" name="Properties Landing Page" sequence="1" action="landing_page_action"/>
+</odoo>

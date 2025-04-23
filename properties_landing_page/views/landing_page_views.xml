@@ -1,0 +1,26 @@
+<odoo>
+    <template id="landing_dashboard_template" name="Properties Landing Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <t t-call-assets="web.assets_common" t-js="false"/>
+                <t t-call-assets="web.assets_backend" t-js="false"/>
+                <t t-call-assets="web.assets_common" t-css="false"/>
+                <t t-call-assets="web.assets_backend" t-css="false"/>
+                <style>
+                    body { background-color: #f8f9fa; }
+                </style>
+            </t>
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h1>Welcome, <t t-esc="user.name"/></h1>
+                            <a href="/web" class="btn btn-outline-secondary">Go to Main Menu</a>
+                        </div>
+                        <div id="properties-landing-dashboard" class="mb-5"></div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

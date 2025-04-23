@@ -1,0 +1,37 @@
+.o_landing_dashboard {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+.o_module_grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+}
+.o_module_card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 1.5rem;
+    width: 220px;
+    text-align: center;
+    transition: box-shadow 0.2s;
+}
+.o_module_card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.o_module_icon img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+.o_module_info strong {
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+.o_module_category {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #888;
+}

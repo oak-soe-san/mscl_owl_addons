@@ -1,0 +1,6 @@
+<odoo>
+    <data>
+        <!-- Initialize the landing page model -->
+        <function model="landing.page" name="_init_landing_page"/>
+    </data>
+</odoo>
